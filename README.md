@@ -3,8 +3,8 @@
 # gocd-cleanup-artifacts
 Tiny program that helps you with cleaning up artifacts on GoCD servers. There was a [discussion](https://groups.google.com/forum/#!topic/go-cd/HfOY_74OKhI/discussion) on GoCD mailing list and my own not-so-good experience managing artifacts on GoCD led me into this.
 
-## How is it suposed to work?
-- Have a whitelist of pipelines who can't fail because of Artifacts missing error
+## How does Janitor work?
+- Have a whitelist of pipelines which can't fail because of Artifacts missing error
 - Specify how many versions of the pipeline and all it's upstream dependencies you want to keep
 - We keep the union of above list and the latest 2 versions of all the pipelines and delete the rest
 
@@ -48,8 +48,8 @@ Generally No, we only do cleanup for the pipelines that are either direct / tran
 ### Is there a way to run the Janitor without deleting anything? 
 Yes, you could run the janitor with `--dry-run` flag. It doesn't delete but just print the directories that will be deleted.
 
-### Does Janitor keep the run logs or delete that as well?
-No, Janitor doesn't keep stage run logs.
+### Does Janitor keep the run logs?
+No, Janitor doesn't keep stage run logs. If you want this feature, please raise it as an Issue or even better send a Pull Request.
 
 ### How does Janitor decide if the Pipeline run is a Failure or a Success?
 Since there isn't an universal way to say if the pipeline has failed or not, because a stage could fail, but we could deem it unimportant (for the time being) and continue the pipeline.
@@ -59,6 +59,8 @@ Janitor is sensitive about what it call failures of a pipeline. The conditions a
 1. Any 1 stage failure is considered a pipeline failure.
 2. If the pipeline doesn't run to completion (paused or locked) is considered a failure.
 
+### Does Janitor respect the "Never Cleanup Artifacts" option of the pipeline? 
+No. That's inside the GoCD's configuration and we don't have a way to syncing it yet. If you want this feature, please raise it as an Issue or even better send a Pull Request.
 
 ## License
 Licensed under the Apache License, Version 2.0: http://www.apache.org/licenses/LICENSE-2.0
