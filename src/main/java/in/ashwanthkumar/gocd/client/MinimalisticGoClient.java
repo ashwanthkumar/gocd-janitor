@@ -21,7 +21,7 @@ public class MinimalisticGoClient {
     private String password;
 
     // for tests
-    private JsonNode mockResponse;
+    private String mockResponse;
 
     public MinimalisticGoClient(String server, String username, String password) {
         this.server = server;
@@ -114,12 +114,12 @@ public class MinimalisticGoClient {
     }
 
     // for testing only
-    /* default */ void setMockResponse(JsonNode response) {
+    /* default */ void setMockResponse(String response) {
         this.mockResponse = response;
     }
 
     private JsonNode getJSON(String resource) {
-        if (this.mockResponse != null) return this.mockResponse;
+        if (this.mockResponse != null) return new JsonNode(this.mockResponse);
         else try {
             String url = buildUrl(resource);
             LOG.debug("Hitting " + url);

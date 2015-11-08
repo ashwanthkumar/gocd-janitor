@@ -8,7 +8,6 @@ import org.slf4j.LoggerFactory;
 
 import java.util.*;
 
-import static in.ashwanthkumar.utils.collections.Lists.flatten;
 import static in.ashwanthkumar.utils.collections.Lists.map;
 
 public class WhiteList {

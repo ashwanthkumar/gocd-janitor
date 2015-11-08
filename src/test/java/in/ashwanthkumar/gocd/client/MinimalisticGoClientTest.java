@@ -16,7 +16,7 @@ public class MinimalisticGoClientTest {
     @Test
     public void shouldParsPipelineHistory() throws IOException {
         MinimalisticGoClient client = new MinimalisticGoClient("http://server", "foo", "bar");
-        client.setMockResponse(TestUtils.readFileAsJSON("/responses/pipeline_history.json"));
+        client.setMockResponse(TestUtils.readFile("/responses/pipeline_history.json"));
         Map<Integer, PipelineRunStatus> statusMap = client.pipelineRunStatus("Build-Linux");
         assertThat(statusMap, hasEntry(634, PipelineRunStatus.FAILED));
         assertThat(statusMap, hasEntry(635, PipelineRunStatus.PASSED));
@@ -27,7 +27,7 @@ public class MinimalisticGoClientTest {
     @Test
     public void shouldParsePipelineStatus() throws IOException {
         MinimalisticGoClient client = new MinimalisticGoClient("http://server", "foo", "bar");
-        client.setMockResponse(TestUtils.readFileAsJSON("/responses/pipeline_status.json"));
+        client.setMockResponse(TestUtils.readFile("/responses/pipeline_status.json"));
         PipelineStatus pipelineStatus = client.pipelineStatus("Build-Linux");
         assertThat(pipelineStatus.isLocked(), is(false));
         assertThat(pipelineStatus.isPaused(), is(true));
@@ -37,7 +37,7 @@ public class MinimalisticGoClientTest {
     @Test
     public void shouldParseUpstreamDependenciesForPipelineRun() throws IOException {
         MinimalisticGoClient client = new MinimalisticGoClient("http://server", "foo", "bar");
-        client.setMockResponse(TestUtils.readFileAsJSON("/responses/pipeline_value_stream_map.json"));
+        client.setMockResponse(TestUtils.readFile("/responses/pipeline_value_stream_map.json"));
         List<PipelineDependency> pipelineDependencies = client.upstreamDependencies("distributions-all", 327);
         assertThat(pipelineDependencies.size(), is(9));
         assertThat(pipelineDependencies, hasItem(new PipelineDependency().setPipelineName("distributions-all").setVersion(327)));
