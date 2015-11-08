@@ -42,6 +42,9 @@ gocd.cleanup {
 ```
 
 ## FAQs
+### Where do I run the Janitor from?
+It is expected to be run on the go server machine where the artifacts are stored. If you run agents on the server, then you create a pipeline and assign it to an agent on the server machine.
+
 ### Do I need to add every new pipeline being created to the config? 
 Generally No, we only do cleanup for the pipelines that are either direct / transitive dependencies of the pipelines specified in the configuration. But if your new pipeline has the same common dependency as the one specified in the configuration, then you might want to add the new pipeline to the config since they might be dependent on various versions of upstream pipelines.  
 
