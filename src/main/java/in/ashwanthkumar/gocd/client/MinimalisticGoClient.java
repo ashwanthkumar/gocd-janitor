@@ -29,6 +29,14 @@ public class MinimalisticGoClient {
         this.password = password;
     }
 
+    public PipelineStatus pipelineStatus(String pipeline) throws UnirestException {
+        JSONObject result = getJSON("/go/api/pipelines/" + pipeline + "/status").getObject();
+        return new PipelineStatus()
+                .setLocked(result.getBoolean("locked"))
+                .setPaused(result.getBoolean("paused"))
+                .setSchedulable(result.getBoolean("schedulable"));
+    }
+
     public Map<Integer, PipelineRunStatus> pipelineRunStatus(String pipeline) throws UnirestException {
         return pipelineRunStatus(pipeline, 0);
     }
