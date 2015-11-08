@@ -8,7 +8,7 @@ import java.net.URL;
 
 public class TestUtils {
     public static JsonNode readFileAsJSON(String file) throws IOException {
-        URL resource = TestUtils.class.getResource("/responses/pipeline_history.json");
+        URL resource = TestUtils.class.getResource(file);
         return new JsonNode(IO.fromFile(resource.getPath()));
     }
 }

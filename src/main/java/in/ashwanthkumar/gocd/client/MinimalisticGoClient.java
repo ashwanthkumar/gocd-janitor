@@ -51,8 +51,15 @@ public class MinimalisticGoClient {
     private PipelineRunStatus pipelineStatusFrom(JSONObject run) {
         JSONArray pipelineStages = run.getJSONArray("stages");
         for (int j = 0; j < pipelineStages.length(); j++) {
+            // Since there isn't an universal way to say if the pipeline has failed or not, because
+            // A stage could fail, but we could deem it unimportant (for the time being) and continue the pipeline.
+
+            // We are a little sensitive about what we call failures of a pipeline. Possible Reasons -
+            // 1. Any 1 stage failure is considered a pipeline failure.
+            // 2. If the pipeline doesn't run to completion (paused or locked) is considered a failure.
             JSONObject stageRun = pipelineStages.getJSONObject(j);
-            if (!stageRun.has("result") || stageRun.getString("result").equalsIgnoreCase("failed")) {
+            boolean stageFailed = !stageRun.has("result") || stageRun.getString("result").equalsIgnoreCase("failed");
+            if (stageFailed) {
                 return PipelineRunStatus.FAILED;
             }
         }
