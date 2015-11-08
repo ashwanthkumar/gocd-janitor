@@ -8,6 +8,39 @@ Tiny (well not so tiny) program that helps you with cleaning up artifacts on GoC
 - Specify how many versions of the pipeline and all it's upstream dependencies you want to keep
 - We keep the union of above list and the latest 2 versions of all the pipelines and delete the rest
 
+## Usage
+```bash
+$ mvn clean package
+$ java -cp target/gocd-cleanup-artifacts-0.0.1-jar-with-dependencies.jar in.ashwanthkumar.gocd.artifacts.Janitor --help
+Option (* = required)  Description                           
+---------------------  -----------                           
+* --config             Path to janitor configuration         
+--dry-run              Doesn't delete anything just emits the
+                         files for deletion                  
+--help                 Display this help message             
+
+----
+
+$ java -cp target/gocd-cleanup-artifacts-0.0.1-jar-with-dependencies.jar in.ashwanthkumar.gocd.artifacts.Janitor --conf gocd-purge.conf --dry-run
+```
+
+## Configuration
+```hocon
+gocd.cleanup {
+  server = "http://ci-server:8080"
+  username = "admin"
+  password = "badget"
+  artifacts-dir = "/data/go-server/artifacts/pipelines/"
+
+  pipelines = [{
+    name = "Pipeline1"
+    # Number of successful runs of this pipeline and all it's upstream dependencies you want to keep
+    # This number can't be greater than PipelineConfig.MAX_RUN_LIMIT (5)
+    runs = 2
+  }]
+}
+```
+
 ## FAQs
 ### Do I need to add every new pipeline being created to the config? 
 Generally No, we only do cleanup for the pipelines that are either direct / transitive dependencies of the pipelines specified in the configuration. But if your new pipeline has the same common dependency as the one specified in the configuration, then you might want to add the new pipeline to the config since they might be dependent on various versions of upstream pipelines.  
