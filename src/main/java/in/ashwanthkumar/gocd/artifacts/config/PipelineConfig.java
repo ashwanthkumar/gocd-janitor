@@ -5,8 +5,6 @@ import com.typesafe.config.Config;
 import java.util.Objects;
 
 public class PipelineConfig {
-    // I really don't want end up making too many HTTP requests and what's the point of more than this anyway? :-|
-    public static final int MAX_RUN_LIMIT = 5;
     public static final int DEFAULT_RUN_LIMIT = 2;
 
     private String name;
@@ -18,9 +16,6 @@ public class PipelineConfig {
         int runs = DEFAULT_RUN_LIMIT; // default value
         if (config.hasPath("runs"))
             runs = config.getInt("runs");
-
-        if (runs > MAX_RUN_LIMIT)
-            throw new RuntimeException(name + " has " + runs + " runs configured, but the max limit is " + MAX_RUN_LIMIT);
 
         return new PipelineConfig()
                 .setName(name)
