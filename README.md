@@ -8,5 +8,24 @@ Tiny (well not so tiny) program that helps you with cleaning up artifacts on GoC
 - Specify how many versions of the pipeline and all it's upstream dependencies you want to keep
 - We keep the union of above list and the latest 2 versions of all the pipelines and delete the rest
 
+## FAQs
+### Do I need to add every new pipeline being created to the config? 
+Generally No, we only do cleanup for the pipelines that are either direct / transitive dependencies of the pipelines specified in the configuration. But if your new pipeline has the same common dependency as the one specified in the configuration, then you might want to add the new pipeline to the config since they might be dependent on various versions of upstream pipelines.  
+
+### Is there a way to run the Janitor without deleting anything? 
+Yes, you could run the janitor with `--dry-run` flag. It doesn't delete but just print the directories that will be deleted.
+
+### Does Janitor keep the run logs or delete that as well?
+No, Janitor doesn't keep stage run logs.
+
+### How does Janitor decide if the Pipeline run is a Failure or a Success?
+Since there isn't an universal way to say if the pipeline has failed or not, because a stage could fail, but we could deem it unimportant (for the time being) and continue the pipeline.
+
+Janitor is sensitive about what it call failures of a pipeline. The conditions are as follows
+
+1. Any 1 stage failure is considered a pipeline failure.
+2. If the pipeline doesn't run to completion (paused or locked) is considered a failure.
+
+
 ## License
 Licensed under the Apache License, Version 2.0: http://www.apache.org/licenses/LICENSE-2.0
