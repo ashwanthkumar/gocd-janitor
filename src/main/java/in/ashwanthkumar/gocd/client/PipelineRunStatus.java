@@ -1,5 +1,5 @@
 package in.ashwanthkumar.gocd.client;
 
-enum PipelineRunStatus {
+public enum PipelineRunStatus {
     RUNNING, FAILED, PASSED
 }

@@ -11,6 +11,8 @@ import java.util.Objects;
 
 public class JanitorConfiguration {
     private String server;
+    private String username;
+    private String password;
     private String artifactStorage;
     private List<PipelineConfig> pipelines;
 
@@ -30,6 +32,8 @@ public class JanitorConfiguration {
         return new JanitorConfiguration()
                 .setServer(config.getString("server"))
                 .setArtifactStorage(config.getString("artifacts-dir"))
+                .setUsername(config.getString("username"))
+                .setPassword(config.getString("password"))
                 .setPipelines(pipelines);
     }
 
@@ -60,18 +64,38 @@ public class JanitorConfiguration {
         return this;
     }
 
+    public String getUsername() {
+        return username;
+    }
+
+    public JanitorConfiguration setUsername(String username) {
+        this.username = username;
+        return this;
+    }
+
+    public String getPassword() {
+        return password;
+    }
+
+    public JanitorConfiguration setPassword(String password) {
+        this.password = password;
+        return this;
+    }
+
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
         JanitorConfiguration that = (JanitorConfiguration) o;
         return Objects.equals(server, that.server) &&
+                Objects.equals(username, that.username) &&
+                Objects.equals(password, that.password) &&
                 Objects.equals(artifactStorage, that.artifactStorage) &&
                 Objects.equals(pipelines, that.pipelines);
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(server, artifactStorage, pipelines);
+        return Objects.hash(server, username, password, artifactStorage, pipelines);
     }
 }

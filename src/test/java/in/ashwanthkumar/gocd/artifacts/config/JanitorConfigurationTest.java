@@ -13,6 +13,8 @@ public class JanitorConfigurationTest {
         JanitorConfiguration configuration = JanitorConfiguration.load(TestUtils.fileName("/test-config.conf"));
         assertThat(configuration.getServer(), is("http://localhost"));
         assertThat(configuration.getArtifactStorage(), is("/data/go-server/artifacts/"));
+        assertThat(configuration.getUsername(), is("foo"));
+        assertThat(configuration.getPassword(), is("bar"));
 
         PipelineConfig expected1 = new PipelineConfig().setName("Pipeline1").setRunsToPersist(2);
         assertThat(configuration.getPipelines(), hasItem(expected1));
