@@ -3,12 +3,16 @@ package in.ashwanthkumar.gocd.artifacts;
 import in.ashwanthkumar.gocd.client.PipelineDependency;
 import in.ashwanthkumar.utils.collections.Lists;
 import in.ashwanthkumar.utils.func.Function;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.util.*;
 
+import static in.ashwanthkumar.utils.collections.Lists.flatten;
 import static in.ashwanthkumar.utils.collections.Lists.map;
 
 public class WhiteList {
+    private static final Logger LOG = LoggerFactory.getLogger(WhiteList.class);
     private Map<String, List<PipelineDependency>> pipelines;
 
     public WhiteList(Set<PipelineDependency> pipelines) {
@@ -33,10 +37,15 @@ public class WhiteList {
     }
 
     public boolean contains(String pipeline, String version) {
-        return isNumber(version) &&
+        boolean result = isNumber(version) &&
                 // We always add the latest run version and it's increment to whitelist
                 Integer.valueOf(version) < largestVersion(pipeline) &&
                 hasItem(new PipelineDependency(pipeline, Integer.valueOf(version)));
+
+        if (!result) {
+            LOG.debug(pipeline + "@" + version + " was not found because only the following are white listed - " + versionsForPipeline(pipeline));
+        }
+        return result;
     }
 
     public boolean hasItem(PipelineDependency dependency) {
@@ -46,6 +55,18 @@ public class WhiteList {
 
     public Iterable<String> pipelinesUnderRadar() {
         return pipelines.keySet();
+    }
+
+    List<Integer> versionsForPipeline(String pipeline) {
+        List<Integer> versions = map(pipelines.get(pipeline), new Function<PipelineDependency, Integer>() {
+            @Override
+            public Integer apply(PipelineDependency dependency) {
+                return dependency.getVersion();
+            }
+        });
+
+        Collections.sort(versions);
+        return versions;
     }
 
     int largestVersion(String pipeline) {
