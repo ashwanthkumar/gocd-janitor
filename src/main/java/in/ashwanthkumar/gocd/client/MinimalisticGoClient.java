@@ -89,7 +89,7 @@ public class MinimalisticGoClient {
 
     private String buildUrl(String resource) {
         try {
-            return URI.create("http://" + server + "/" + resource).normalize().toURL().toExternalForm();
+            return URI.create(String.format("%s/%s", server, resource)).normalize().toURL().toExternalForm();
         } catch (MalformedURLException e) {
             LOG.error(e.getMessage(), e);
             throw new RuntimeException(e);

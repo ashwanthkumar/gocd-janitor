@@ -11,4 +11,8 @@ public class TestUtils {
         URL resource = TestUtils.class.getResource(file);
         return new JsonNode(IO.fromFile(resource.getPath()));
     }
+
+    public static String fileName(String resource) {
+        return TestUtils.class.getResource(resource).getPath();
+    }
 }

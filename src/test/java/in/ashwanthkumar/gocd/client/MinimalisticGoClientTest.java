@@ -14,7 +14,7 @@ public class MinimalisticGoClientTest {
 
     @Test
     public void shouldParsPipelineHistory() throws IOException, UnirestException {
-        MinimalisticGoClient client = new MinimalisticGoClient("server", "foo", "bar");
+        MinimalisticGoClient client = new MinimalisticGoClient("http://server", "foo", "bar");
         client.setMockResponse(TestUtils.readFileAsJSON("/responses/pipeline_history.json"));
         Map<Integer, PipelineRunStatus> statusMap = client.pipelineRunStatus("Build-Linux");
         assertThat(statusMap, hasEntry(634, PipelineRunStatus.FAILED));
@@ -25,7 +25,7 @@ public class MinimalisticGoClientTest {
 
     @Test
     public void shouldParsePipelineStatus() throws IOException, UnirestException {
-        MinimalisticGoClient client = new MinimalisticGoClient("server", "foo", "bar");
+        MinimalisticGoClient client = new MinimalisticGoClient("http://server", "foo", "bar");
         client.setMockResponse(TestUtils.readFileAsJSON("/responses/pipeline_status.json"));
         PipelineStatus pipelineStatus = client.pipelineStatus("Build-Linux");
         assertThat(pipelineStatus.isLocked(), is(false));
