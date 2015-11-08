@@ -2,8 +2,11 @@ package in.ashwanthkumar.gocd.artifacts;
 
 import in.ashwanthkumar.gocd.client.PipelineDependency;
 import in.ashwanthkumar.utils.collections.Lists;
+import in.ashwanthkumar.utils.func.Function;
 
 import java.util.*;
+
+import static in.ashwanthkumar.utils.collections.Lists.map;
 
 public class WhiteList {
     private Map<String, List<PipelineDependency>> pipelines;
@@ -30,7 +33,10 @@ public class WhiteList {
     }
 
     public boolean contains(String pipeline, String version) {
-        return isNumber(version) && hasItem(new PipelineDependency(pipeline, Integer.valueOf(version)));
+        return isNumber(version) &&
+                // We always add the latest run version and it's increment to whitelist
+                Integer.valueOf(version) < largestVersion(pipeline) &&
+                hasItem(new PipelineDependency(pipeline, Integer.valueOf(version)));
     }
 
     public boolean hasItem(PipelineDependency dependency) {
@@ -40,6 +46,15 @@ public class WhiteList {
 
     public Iterable<String> pipelinesUnderRadar() {
         return pipelines.keySet();
+    }
+
+    int largestVersion(String pipeline) {
+        return Collections.max(map(pipelines.get(pipeline), new Function<PipelineDependency, Integer>() {
+            @Override
+            public Integer apply(PipelineDependency dependency) {
+                return dependency.getVersion();
+            }
+        }));
     }
 
     boolean isNumber(String value) {

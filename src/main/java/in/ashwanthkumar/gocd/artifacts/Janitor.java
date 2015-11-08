@@ -16,7 +16,10 @@ import org.slf4j.LoggerFactory;
 
 import java.io.File;
 import java.io.IOException;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
 
 import static in.ashwanthkumar.utils.collections.Lists.*;
 
@@ -82,7 +85,7 @@ public class Janitor {
 //                throw new RuntimeException(e);
 //            }
         } else {
-            LOG.info("[DRY RUN] Deleting " + path.getAbsolutePath());
+            LOG.info("[DRY RUN] Will delete " + path.getAbsolutePath());
         }
     }
 
@@ -94,7 +97,8 @@ public class Janitor {
                 int offset = 0;
                 while (versions.size() < pipelineConfig.getRunsToPersist()) {
                     Set<Map.Entry<Integer, PipelineRunStatus>> pipelineStatuses = client.pipelineRunStatus(pipelineConfig.getName(), offset).entrySet();
-                    versions.add(head(pipelineStatuses).getKey() + 1); // current run of the pipeline (if any)
+                    versions.add(head(pipelineStatuses).getKey());     // Latest run version irrespective of its status will be added to whitelist
+                    versions.add(head(pipelineStatuses).getKey() + 1); // current run of the pipeline (if any) - History endpoint doesn't expose current running pipeline info
 
                     versions.addAll(
                             take(map(filter(pipelineStatuses, new Predicate<Map.Entry<Integer, PipelineRunStatus>>() {
@@ -148,7 +152,7 @@ public class Janitor {
     }
 
     private <T> T head(Set<T> set) {
-        if(set.size() > 1) return set.iterator().next();
+        if (set.size() > 1) return set.iterator().next();
         else throw new RuntimeException("head of a empty Set");
     }
 
