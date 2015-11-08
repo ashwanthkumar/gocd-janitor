@@ -9,7 +9,7 @@ Tiny (well not so tiny) program that helps you with cleaning up artifacts on GoC
 - We keep the union of above list and the latest 2 versions of all the pipelines and delete the rest
 
 ## Usage
-```bash
+```
 $ mvn clean package
 $ java -cp target/gocd-cleanup-artifacts-0.0.1-jar-with-dependencies.jar in.ashwanthkumar.gocd.artifacts.Janitor --help
 Option (* = required)  Description                           
