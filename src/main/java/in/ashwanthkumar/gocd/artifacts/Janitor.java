@@ -80,16 +80,16 @@ public class Janitor {
 
     private long delete(File path, boolean dryRun) {
         long size = FileUtils.sizeOfDirectory(path);
-        if (!dryRun) {
-            LOG.info("Deleting " + path.getAbsolutePath() + ", size = " + FileUtils.byteCountToDisplaySize(size));
-//            try {
-//                FileUtils.deleteDirectory(path);
-//            } catch (IOException e) {
-//                LOG.error(e.getMessage(), e);
-//                throw new RuntimeException(e);
-//            }
-        } else {
+        if (dryRun) {
             LOG.info("[DRY RUN] Will delete " + path.getAbsolutePath() + ", size = " + FileUtils.byteCountToDisplaySize(size));
+        } else {
+            LOG.info("Deleting " + path.getAbsolutePath() + ", size = " + FileUtils.byteCountToDisplaySize(size));
+            try {
+                FileUtils.deleteDirectory(path);
+            } catch (IOException e) {
+                LOG.error(e.getMessage(), e);
+                throw new RuntimeException(e);
+            }
         }
 
         return size;
