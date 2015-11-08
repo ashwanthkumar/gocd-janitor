@@ -2,7 +2,6 @@ package in.ashwanthkumar.gocd.artifacts;
 
 import in.ashwanthkumar.gocd.client.PipelineDependency;
 import in.ashwanthkumar.utils.collections.Lists;
-import in.ashwanthkumar.utils.collections.Maps;
 
 import java.util.*;
 
