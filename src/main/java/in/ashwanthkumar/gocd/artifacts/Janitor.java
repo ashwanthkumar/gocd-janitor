@@ -11,6 +11,7 @@ import in.ashwanthkumar.utils.func.Predicate;
 import in.ashwanthkumar.utils.lang.tuple.Tuple2;
 import joptsimple.OptionParser;
 import joptsimple.OptionSet;
+import org.apache.commons.io.FileUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -59,25 +60,28 @@ public class Janitor {
             LOG.debug("[WhiteList] - " + pipelineDependency);
         }
 
+        long deletedBytes = 0;
         for (String pipeline : whiteList.pipelinesUnderRadar()) {
             LOG.info("Looking for pipeline - " + pipeline);
             File pipelineDirectory = new File(config.getArtifactStorage() + "/" + pipeline);
             File[] versionDirs = listFiles(pipelineDirectory.getAbsolutePath());
             for (File versionDir : versionDirs) {
                 if (!whiteList.contains(pipelineDirectory.getName(), versionDir.getName())) {
-                    delete(versionDir, dryRun);
+                    deletedBytes += delete(versionDir, dryRun);
                 } else {
                     LOG.info("Skipping since it is white listed" + versionDir.getAbsolutePath());
                 }
             }
         }
 
+        LOG.info("Total bytes deleted so far - " + FileUtils.byteCountToDisplaySize(deletedBytes));
         LOG.info("Shutting down Janitor");
     }
 
-    private void delete(File path, boolean dryRun) {
+    private long delete(File path, boolean dryRun) {
+        long size = FileUtils.sizeOfDirectory(path);
         if (!dryRun) {
-            LOG.info("Deleting " + path.getAbsolutePath());
+            LOG.info("Deleting " + path.getAbsolutePath() + ", size = " + FileUtils.byteCountToDisplaySize(size));
 //            try {
 //                FileUtils.deleteDirectory(path);
 //            } catch (IOException e) {
@@ -85,8 +89,10 @@ public class Janitor {
 //                throw new RuntimeException(e);
 //            }
         } else {
-            LOG.info("[DRY RUN] Will delete " + path.getAbsolutePath());
+            LOG.info("[DRY RUN] Will delete " + path.getAbsolutePath() + ", size = " + FileUtils.byteCountToDisplaySize(size));
         }
+
+        return size;
     }
 
     /* default */ List<Tuple2<String, List<Integer>>> mandatoryPipelineVersions(final MinimalisticGoClient client, List<PipelineConfig> pipelines) {
