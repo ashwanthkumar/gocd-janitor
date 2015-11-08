@@ -16,9 +16,7 @@ import org.slf4j.LoggerFactory;
 
 import java.io.File;
 import java.io.IOException;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 import static in.ashwanthkumar.utils.collections.Lists.*;
 
@@ -95,8 +93,11 @@ public class Janitor {
                 List<Integer> versions = new ArrayList<>();
                 int offset = 0;
                 while (versions.size() < pipelineConfig.getRunsToPersist()) {
+                    Set<Map.Entry<Integer, PipelineRunStatus>> pipelineStatuses = client.pipelineRunStatus(pipelineConfig.getName(), offset).entrySet();
+                    versions.add(head(pipelineStatuses).getKey() + 1); // current run of the pipeline (if any)
+
                     versions.addAll(
-                            take(map(filter(client.pipelineRunStatus(pipelineConfig.getName(), offset).entrySet(), new Predicate<Map.Entry<Integer, PipelineRunStatus>>() {
+                            take(map(filter(pipelineStatuses, new Predicate<Map.Entry<Integer, PipelineRunStatus>>() {
                                 @Override
                                 public Boolean apply(Map.Entry<Integer, PipelineRunStatus> entry) {
                                     return entry.getValue() == PipelineRunStatus.PASSED;
@@ -144,6 +145,11 @@ public class Janitor {
             else break;
         }
         return topK;
+    }
+
+    private <T> T head(Set<T> set) {
+        if(set.size() > 1) return set.iterator().next();
+        else throw new RuntimeException("head of a empty Set");
     }
 
 }
