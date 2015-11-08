@@ -41,7 +41,7 @@ public class MinimalisticGoClient {
                 JSONObject node = nodes.getJSONObject(j);
                 String name = node.getString("name");
                 // The VSM JSON is always ordered (left to right in VSM view) set of dependencies
-                if(name.equals(pipeline)) return dependencies;
+                if (name.equals(pipeline)) return dependencies;
 
                 // We pick only the PIPELINE type dependencies
                 if (node.getString("node_type").equalsIgnoreCase("PIPELINE")) {
@@ -49,14 +49,11 @@ public class MinimalisticGoClient {
                     for (int k = 0; k < instances.length(); k++) {
                         JSONObject instance = instances.getJSONObject(k);
                         int counter = instance.getInt("counter");
-                        // Counter exist only for upstream pipelines and not downstream
-                        if(counter > 0) {
-                            dependencies.add(
-                                    new PipelineDependency()
-                                            .setPipelineName(name)
-                                            .setVersion(counter)
-                            );
-                        }
+                        dependencies.add(
+                                new PipelineDependency()
+                                        .setPipelineName(name)
+                                        .setVersion(counter)
+                        );
                     }
                 }
             }
