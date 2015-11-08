@@ -10,6 +10,8 @@ import org.slf4j.LoggerFactory;
 
 import java.net.MalformedURLException;
 import java.net.URI;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Map;
 import java.util.TreeMap;
 
@@ -29,7 +31,41 @@ public class MinimalisticGoClient {
         this.password = password;
     }
 
-    public PipelineStatus pipelineStatus(String pipeline) throws UnirestException {
+    public List<PipelineDependency> upstreamDependencies(String pipeline, int version) {
+        JSONObject result = getJSON("/go/pipelines/value_stream_map/" + pipeline + "/" + version + ".json").getObject();
+        JSONArray levels = result.getJSONArray("levels");
+        ArrayList<PipelineDependency> dependencies = new ArrayList<>();
+        for (int i = 0; i < levels.length(); i++) {
+            JSONArray nodes = levels.getJSONObject(i).getJSONArray("nodes");
+            for (int j = 0; j < nodes.length(); j++) {
+                JSONObject node = nodes.getJSONObject(j);
+                String name = node.getString("name");
+                // The VSM JSON is always ordered (left to right in VSM view) set of dependencies
+                if(name.equals(pipeline)) return dependencies;
+
+                // We pick only the PIPELINE type dependencies
+                if (node.getString("node_type").equalsIgnoreCase("PIPELINE")) {
+                    JSONArray instances = node.getJSONArray("instances");
+                    for (int k = 0; k < instances.length(); k++) {
+                        JSONObject instance = instances.getJSONObject(k);
+                        int counter = instance.getInt("counter");
+                        // Counter exist only for upstream pipelines and not downstream
+                        if(counter > 0) {
+                            dependencies.add(
+                                    new PipelineDependency()
+                                            .setPipelineName(name)
+                                            .setVersion(counter)
+                            );
+                        }
+                    }
+                }
+            }
+        }
+
+        return dependencies;
+    }
+
+    public PipelineStatus pipelineStatus(String pipeline) {
         JSONObject result = getJSON("/go/api/pipelines/" + pipeline + "/status").getObject();
         return new PipelineStatus()
                 .setLocked(result.getBoolean("locked"))
@@ -37,11 +73,11 @@ public class MinimalisticGoClient {
                 .setSchedulable(result.getBoolean("schedulable"));
     }
 
-    public Map<Integer, PipelineRunStatus> pipelineRunStatus(String pipeline) throws UnirestException {
+    public Map<Integer, PipelineRunStatus> pipelineRunStatus(String pipeline) {
         return pipelineRunStatus(pipeline, 0);
     }
 
-    public Map<Integer, PipelineRunStatus> pipelineRunStatus(String pipeline, int offset) throws UnirestException {
+    public Map<Integer, PipelineRunStatus> pipelineRunStatus(String pipeline, int offset) {
         Map<Integer, PipelineRunStatus> result = new TreeMap<Integer, PipelineRunStatus>();
         JSONArray history = getJSON(buildUrl("/go/api/pipelines/" + pipeline + "/history/" + offset))
                 .getObject().getJSONArray("pipelines");
@@ -80,11 +116,16 @@ public class MinimalisticGoClient {
         this.mockResponse = response;
     }
 
-    private JsonNode getJSON(String resource) throws UnirestException {
+    private JsonNode getJSON(String resource) {
         if (this.mockResponse != null) return this.mockResponse;
-        else return Unirest.get(resource)
-                .basicAuth(username, password)
-                .asJson().getBody();
+        else try {
+            return Unirest.get(resource)
+                    .basicAuth(username, password)
+                    .asJson().getBody();
+        } catch (UnirestException e) {
+            LOG.error(e.getMessage());
+            throw new RuntimeException(e.getMessage(), e);
+        }
     }
 
     private String buildUrl(String resource) {

@@ -1,0 +1,548 @@
+{
+  "current_pipeline": "distributions-all",
+  "levels": [{
+    "nodes": [{
+      "name": "https://gocd:******@download.go.cd/git/gocd/gocd",
+      "node_type": "GIT",
+      "instances": [{
+        "locator": "/go/materials/value_stream_map/724f9be2727c282c3ece8e4c12b91446f32e1e54bec14e302515c6410237f749/e766b5497b7f9b39dd819d80bb740beaf9d07962",
+        "modified_time": "2 days ago",
+        "user": "Ketan Padegaonkar \u003Cketanpadegaonkar@gmail.com\u003E",
+        "comment": "Merge pull request #1599 from jyotisingh/1393_bug_fix\n\nBug fix - #1393",
+        "revision": "e766b5497b7f9b39dd819d80bb740beaf9d07962"
+      }, {
+        "locator": "/go/materials/value_stream_map/724f9be2727c282c3ece8e4c12b91446f32e1e54bec14e302515c6410237f749/0ba35468ea457e8b89860ef9693acc684c9d69ea",
+        "modified_time": "2 days ago",
+        "user": "Jyoti Singh \u003Cjyotisingh7@gmail.com\u003E",
+        "comment": "Bug fix - #1393",
+        "revision": "0ba35468ea457e8b89860ef9693acc684c9d69ea"
+      }],
+      "depth": 1,
+      "parents": [],
+      "locator": "",
+      "id": "724f9be2727c282c3ece8e4c12b91446f32e1e54bec14e302515c6410237f749",
+      "dependents": ["b78d0a17-a221-477b-a1b7-dd5a4a0f55ef", "87ebee93-2813-4b80-83b3-a9c529755497", "create-maven-release", "867ad1b5-417c-40f7-9983-b8a5d81cff3e", "78516b0c-ffe5-4a1b-889f-8915d621db4a"],
+      "material_names": ["gocd"]
+    }]
+  }, {
+    "nodes": [{
+      "name": "dummy-b78d0a17-a221-477b-a1b7-dd5a4a0f55ef",
+      "node_type": "DUMMY",
+      "locator": "",
+      "parents": ["724f9be2727c282c3ece8e4c12b91446f32e1e54bec14e302515c6410237f749"],
+      "depth": 1,
+      "instances": [],
+      "id": "b78d0a17-a221-477b-a1b7-dd5a4a0f55ef",
+      "dependents": ["233154f2-252d-4aaf-870a-1c2958851d1a"]
+    }, {
+      "name": "dummy-87ebee93-2813-4b80-83b3-a9c529755497",
+      "node_type": "DUMMY",
+      "locator": "",
+      "parents": ["724f9be2727c282c3ece8e4c12b91446f32e1e54bec14e302515c6410237f749"],
+      "depth": 2,
+      "instances": [],
+      "id": "87ebee93-2813-4b80-83b3-a9c529755497",
+      "dependents": ["build-linux"]
+    }, {
+      "name": "create-maven-release",
+      "node_type": "PIPELINE",
+      "locator": "/go/tab/pipeline/history/create-maven-release",
+      "parents": ["724f9be2727c282c3ece8e4c12b91446f32e1e54bec14e302515c6410237f749"],
+      "depth": 3,
+      "instances": [{
+        "stages": [{
+          "locator": "/go/pipelines/create-maven-release/18/create-maven-release/1",
+          "name": "create-maven-release",
+          "status": "Passed"
+        }],
+        "locator": "/go/pipelines/value_stream_map/create-maven-release/18",
+        "counter": 18,
+        "label": "18"
+      }],
+      "id": "create-maven-release",
+      "dependents": ["build-linux", "build-windows"]
+    }, {
+      "name": "dummy-867ad1b5-417c-40f7-9983-b8a5d81cff3e",
+      "node_type": "DUMMY",
+      "locator": "",
+      "parents": ["724f9be2727c282c3ece8e4c12b91446f32e1e54bec14e302515c6410237f749"],
+      "depth": 4,
+      "instances": [],
+      "id": "867ad1b5-417c-40f7-9983-b8a5d81cff3e",
+      "dependents": ["build-windows"]
+    }, {
+      "name": "dummy-78516b0c-ffe5-4a1b-889f-8915d621db4a",
+      "node_type": "DUMMY",
+      "locator": "",
+      "parents": ["724f9be2727c282c3ece8e4c12b91446f32e1e54bec14e302515c6410237f749"],
+      "depth": 5,
+      "instances": [],
+      "id": "78516b0c-ffe5-4a1b-889f-8915d621db4a",
+      "dependents": ["00eac59e-2def-49e6-b267-730a69970c0e"]
+    }]
+  }, {
+    "nodes": [{
+      "name": "dummy-233154f2-252d-4aaf-870a-1c2958851d1a",
+      "node_type": "DUMMY",
+      "locator": "",
+      "parents": ["b78d0a17-a221-477b-a1b7-dd5a4a0f55ef"],
+      "depth": 1,
+      "instances": [],
+      "id": "233154f2-252d-4aaf-870a-1c2958851d1a",
+      "dependents": ["843d72ac-bff7-4604-8993-4b8a0c3210dd"]
+    }, {
+      "name": "build-linux",
+      "node_type": "PIPELINE",
+      "locator": "/go/tab/pipeline/history/build-linux",
+      "parents": ["87ebee93-2813-4b80-83b3-a9c529755497", "create-maven-release"],
+      "depth": 2,
+      "instances": [{
+        "stages": [{
+          "locator": "/go/pipelines/build-linux/641/build-non-server/3",
+          "name": "build-non-server",
+          "status": "Passed"
+        }, {
+          "locator": "/go/pipelines/build-linux/641/build-server/1",
+          "name": "build-server",
+          "status": "Passed"
+        }, {
+          "locator": "/go/pipelines/build-linux/641/go-sdk/1",
+          "name": "go-sdk",
+          "status": "Passed"
+        }, {
+          "locator": "/go/pipelines/build-linux/641/check_tlb_correctness/1",
+          "name": "check_tlb_correctness",
+          "status": "Passed"
+        }],
+        "locator": "/go/pipelines/value_stream_map/build-linux/641",
+        "counter": 641,
+        "label": "15.3.0.641-e766b54"
+      }],
+      "id": "build-linux",
+      "dependents": ["2acb472b-5aca-484a-ae70-a4d4844ce0c3", "plugins", "7baeb692-8f21-4e27-a6c3-2a8364adced3"]
+    }, {
+      "name": "build-windows",
+      "node_type": "PIPELINE",
+      "locator": "/go/tab/pipeline/history/build-windows",
+      "parents": ["867ad1b5-417c-40f7-9983-b8a5d81cff3e", "create-maven-release"],
+      "depth": 3,
+      "instances": [{
+        "stages": [{
+          "locator": "/go/pipelines/build-windows/566/build-non-server-windows/1",
+          "name": "build-non-server-windows",
+          "status": "Passed"
+        }, {
+          "locator": "/go/pipelines/build-windows/566/build-server-windows/1",
+          "name": "build-server-windows",
+          "status": "Passed"
+        }],
+        "locator": "/go/pipelines/value_stream_map/build-windows/566",
+        "counter": 566,
+        "label": "15.3.0.566-e766b54"
+      }],
+      "id": "build-windows",
+      "dependents": ["plugins"]
+    }, {
+      "name": "https://gocd:******@download.go.cd/git/gocd/go-plugins",
+      "node_type": "GIT",
+      "instances": [{
+        "locator": "/go/materials/value_stream_map/ebe01737e3aeb515d7acf8e529b78b8f197d8cca06ec4bd0afce30ab07e7a286/8b2d403c1637efc33cb4e06192dd99da821d7c66",
+        "modified_time": "3 months ago",
+        "user": "Jyoti Singh \u003Cjyotisingh7@gmail.com\u003E",
+        "comment": "Merge pull request #27 from jyotisingh/bumping_yum_version_to_2_0_1\n\n#23 - fixing broken test",
+        "revision": "8b2d403c1637efc33cb4e06192dd99da821d7c66"
+      }],
+      "depth": 4,
+      "parents": [],
+      "locator": "",
+      "id": "ebe01737e3aeb515d7acf8e529b78b8f197d8cca06ec4bd0afce30ab07e7a286",
+      "dependents": ["plugins"]
+    }, {
+      "name": "dummy-00eac59e-2def-49e6-b267-730a69970c0e",
+      "node_type": "DUMMY",
+      "locator": "",
+      "parents": ["78516b0c-ffe5-4a1b-889f-8915d621db4a"],
+      "depth": 5,
+      "instances": [],
+      "id": "00eac59e-2def-49e6-b267-730a69970c0e",
+      "dependents": ["0b8313e7-44fc-4256-b9a0-93476a30f0d8"]
+    }]
+  }, {
+    "nodes": [{
+      "name": "dummy-2acb472b-5aca-484a-ae70-a4d4844ce0c3",
+      "node_type": "DUMMY",
+      "locator": "",
+      "parents": ["build-linux"],
+      "depth": 1,
+      "instances": [],
+      "id": "2acb472b-5aca-484a-ae70-a4d4844ce0c3",
+      "dependents": ["5952cbb2-b224-4156-9972-f003c292e5f7"]
+    }, {
+      "name": "dummy-843d72ac-bff7-4604-8993-4b8a0c3210dd",
+      "node_type": "DUMMY",
+      "locator": "",
+      "parents": ["233154f2-252d-4aaf-870a-1c2958851d1a"],
+      "depth": 2,
+      "instances": [],
+      "id": "843d72ac-bff7-4604-8993-4b8a0c3210dd",
+      "dependents": ["0a4b1f4b-1700-4f99-9820-c8589055a3ee"]
+    }, {
+      "name": "plugins",
+      "node_type": "PIPELINE",
+      "locator": "/go/tab/pipeline/history/plugins",
+      "parents": ["ebe01737e3aeb515d7acf8e529b78b8f197d8cca06ec4bd0afce30ab07e7a286", "build-linux", "build-windows"],
+      "depth": 3,
+      "instances": [{
+        "stages": [{
+          "locator": "/go/pipelines/plugins/500/build/1",
+          "name": "build",
+          "status": "Passed"
+        }],
+        "locator": "/go/pipelines/value_stream_map/plugins/500",
+        "counter": 500,
+        "label": "15.3.0.641-e766b54"
+      }],
+      "id": "plugins",
+      "dependents": ["e85b268b-ed37-4811-b1b0-9cad89c0b1f8", "qa-packages"]
+    }, {
+      "name": "dummy-7baeb692-8f21-4e27-a6c3-2a8364adced3",
+      "node_type": "DUMMY",
+      "locator": "",
+      "parents": ["build-linux"],
+      "depth": 4,
+      "instances": [],
+      "id": "7baeb692-8f21-4e27-a6c3-2a8364adced3",
+      "dependents": ["qa-packages"]
+    }, {
+      "name": "dummy-0b8313e7-44fc-4256-b9a0-93476a30f0d8",
+      "node_type": "DUMMY",
+      "locator": "",
+      "parents": ["00eac59e-2def-49e6-b267-730a69970c0e"],
+      "depth": 5,
+      "instances": [],
+      "id": "0b8313e7-44fc-4256-b9a0-93476a30f0d8",
+      "dependents": ["qa-packages"]
+    }, {
+      "name": "https://gocd:******@download.go.cd/git/gocd/build_utilities",
+      "node_type": "GIT",
+      "instances": [{
+        "locator": "/go/materials/value_stream_map/a3df9ef9948511e11714c0e3d4007c18644c3f499f21d9f7c77793250a2f86b4/5fd015b99e6fbaae7519f135c0f45fa2793626fc",
+        "modified_time": "4 days ago",
+        "user": "Ketan Padegaonkar \u003CKetanPadegaonkar@gmail.com\u003E",
+        "comment": "More quoting fixes.",
+        "revision": "5fd015b99e6fbaae7519f135c0f45fa2793626fc"
+      }],
+      "depth": 6,
+      "parents": [],
+      "locator": "",
+      "id": "a3df9ef9948511e11714c0e3d4007c18644c3f499f21d9f7c77793250a2f86b4",
+      "dependents": ["qa-packages", "907bcdaf-4fe2-49ad-88a0-664efa9e1ea0"],
+      "material_names": ["build_utilities"]
+    }]
+  }, {
+    "nodes": [{
+      "name": "dummy-5952cbb2-b224-4156-9972-f003c292e5f7",
+      "node_type": "DUMMY",
+      "locator": "",
+      "parents": ["2acb472b-5aca-484a-ae70-a4d4844ce0c3"],
+      "depth": 1,
+      "instances": [],
+      "id": "5952cbb2-b224-4156-9972-f003c292e5f7",
+      "dependents": ["5408b258-1da1-442e-8149-24961086138f"]
+    }, {
+      "name": "dummy-0a4b1f4b-1700-4f99-9820-c8589055a3ee",
+      "node_type": "DUMMY",
+      "locator": "",
+      "parents": ["843d72ac-bff7-4604-8993-4b8a0c3210dd"],
+      "depth": 2,
+      "instances": [],
+      "id": "0a4b1f4b-1700-4f99-9820-c8589055a3ee",
+      "dependents": ["3785634f-641f-4c1d-be6e-d631442345f9"]
+    }, {
+      "name": "dummy-e85b268b-ed37-4811-b1b0-9cad89c0b1f8",
+      "node_type": "DUMMY",
+      "locator": "",
+      "parents": ["plugins"],
+      "depth": 3,
+      "instances": [],
+      "id": "e85b268b-ed37-4811-b1b0-9cad89c0b1f8",
+      "dependents": ["d9a2aadc-07e7-4c0a-8a1b-75b1e700cda9"]
+    }, {
+      "name": "qa-packages",
+      "node_type": "PIPELINE",
+      "locator": "/go/tab/pipeline/history/qa-packages",
+      "parents": ["0b8313e7-44fc-4256-b9a0-93476a30f0d8", "7baeb692-8f21-4e27-a6c3-2a8364adced3", "plugins", "a3df9ef9948511e11714c0e3d4007c18644c3f499f21d9f7c77793250a2f86b4"],
+      "depth": 5,
+      "instances": [{
+        "stages": [{
+          "locator": "/go/pipelines/qa-packages/499/dist/1",
+          "name": "dist",
+          "status": "Passed"
+        }, {
+          "locator": "/go/pipelines/qa-packages/499/update_gocd_build_map/1",
+          "name": "update_gocd_build_map",
+          "status": "Passed"
+        }],
+        "locator": "/go/pipelines/value_stream_map/qa-packages/499",
+        "counter": 499,
+        "label": "15.3.0.641-e766b54"
+      }],
+      "id": "qa-packages",
+      "dependents": ["acceptance-gauge", "smoke-go-gauge"]
+    }, {
+      "name": "https://gocd:******@download.go.cd/git/gocd/gocd-functional-tests",
+      "node_type": "GIT",
+      "instances": [{
+        "locator": "/go/materials/value_stream_map/65aaa2bbec0d0fa31553827599d36c63cd46036122b08bbebeee903c0c24478f/38f0ae607abd4234494c2e9f85a0d6b6703656d5",
+        "modified_time": "1 day ago",
+        "user": "rajieshn \u003Crajieshn@INrajieshn.local\u003E",
+        "comment": "fix firefos pathj",
+        "revision": "38f0ae607abd4234494c2e9f85a0d6b6703656d5"
+      }, {
+        "locator": "/go/materials/value_stream_map/65aaa2bbec0d0fa31553827599d36c63cd46036122b08bbebeee903c0c24478f/3ec8435191ba6d5557ae1e163d69a3baacc1cb6e",
+        "modified_time": "1 day ago",
+        "user": "rajieshn \u003Crajieshn@INrajieshn.local\u003E",
+        "comment": "fix the ie proxy setting",
+        "revision": "3ec8435191ba6d5557ae1e163d69a3baacc1cb6e"
+      }],
+      "depth": 6,
+      "parents": [],
+      "locator": "",
+      "id": "65aaa2bbec0d0fa31553827599d36c63cd46036122b08bbebeee903c0c24478f",
+      "dependents": ["acceptance-gauge", "smoke-go-gauge"],
+      "material_names": ["go-functional-tests"]
+    }, {
+      "name": "dummy-907bcdaf-4fe2-49ad-88a0-664efa9e1ea0",
+      "node_type": "DUMMY",
+      "locator": "",
+      "parents": ["a3df9ef9948511e11714c0e3d4007c18644c3f499f21d9f7c77793250a2f86b4"],
+      "depth": 7,
+      "instances": [],
+      "id": "907bcdaf-4fe2-49ad-88a0-664efa9e1ea0",
+      "dependents": ["c475c71b-538b-4565-957f-7e908621a7d6"]
+    }]
+  }, {
+    "nodes": [{
+      "name": "dummy-5408b258-1da1-442e-8149-24961086138f",
+      "node_type": "DUMMY",
+      "locator": "",
+      "parents": ["5952cbb2-b224-4156-9972-f003c292e5f7"],
+      "depth": 1,
+      "instances": [],
+      "id": "5408b258-1da1-442e-8149-24961086138f",
+      "dependents": ["43591bc8-c4e9-4fcb-9c31-d7f690f5986d"]
+    }, {
+      "name": "dummy-3785634f-641f-4c1d-be6e-d631442345f9",
+      "node_type": "DUMMY",
+      "locator": "",
+      "parents": ["0a4b1f4b-1700-4f99-9820-c8589055a3ee"],
+      "depth": 2,
+      "instances": [],
+      "id": "3785634f-641f-4c1d-be6e-d631442345f9",
+      "dependents": ["e2e7dff9-444f-495d-9c35-6a115ab5ff11"]
+    }, {
+      "name": "dummy-d9a2aadc-07e7-4c0a-8a1b-75b1e700cda9",
+      "node_type": "DUMMY",
+      "locator": "",
+      "parents": ["e85b268b-ed37-4811-b1b0-9cad89c0b1f8"],
+      "depth": 3,
+      "instances": [],
+      "id": "d9a2aadc-07e7-4c0a-8a1b-75b1e700cda9",
+      "dependents": ["a67a2f04-edc0-440c-aa6c-0dfaa14acb78"]
+    }, {
+      "name": "https://gocd:******@download.go.cd/git/gocd/twist_tests",
+      "node_type": "GIT",
+      "instances": [{
+        "locator": "/go/materials/value_stream_map/cf80d8337b48eb57e4fe016157c0200d49e6bb8f80c9bcd98c6ccb4f87d4870e/ac2fcd142aa793e03795921fa2436b6896f55821",
+        "modified_time": "18 days ago",
+        "user": "Ketan Padegaonkar \u003CKetanPadegaonkar@gmail.com\u003E",
+        "comment": "Fix the FF extract script",
+        "revision": "ac2fcd142aa793e03795921fa2436b6896f55821"
+      }],
+      "depth": 4,
+      "parents": [],
+      "locator": "",
+      "id": "cf80d8337b48eb57e4fe016157c0200d49e6bb8f80c9bcd98c6ccb4f87d4870e",
+      "dependents": ["regression"]
+    }, {
+      "name": "acceptance-gauge",
+      "node_type": "PIPELINE",
+      "locator": "/go/tab/pipeline/history/acceptance-gauge",
+      "parents": ["qa-packages", "65aaa2bbec0d0fa31553827599d36c63cd46036122b08bbebeee903c0c24478f"],
+      "depth": 5,
+      "instances": [{
+        "stages": [{
+          "locator": "/go/pipelines/acceptance-gauge/63/RunAcceptanceSpecs-priority/1",
+          "name": "RunAcceptanceSpecs-priority",
+          "status": "Passed"
+        }, {
+          "locator": "/go/pipelines/acceptance-gauge/63/RunAcceptanceSpecs-plugins/1",
+          "name": "RunAcceptanceSpecs-plugins",
+          "status": "Passed"
+        }],
+        "locator": "/go/pipelines/value_stream_map/acceptance-gauge/63",
+        "counter": 63,
+        "label": "15.3.0.641-e766b54"
+      }],
+      "id": "acceptance-gauge",
+      "dependents": ["regression"]
+    }, {
+      "name": "smoke-go-gauge",
+      "node_type": "PIPELINE",
+      "locator": "/go/tab/pipeline/history/smoke-go-gauge",
+      "parents": ["qa-packages", "65aaa2bbec0d0fa31553827599d36c63cd46036122b08bbebeee903c0c24478f"],
+      "depth": 6,
+      "instances": [{
+        "stages": [{
+          "locator": "/go/pipelines/smoke-go-gauge/31/GaugeSmoke/1",
+          "name": "GaugeSmoke",
+          "status": "Passed"
+        }],
+        "locator": "/go/pipelines/value_stream_map/smoke-go-gauge/31",
+        "counter": 31,
+        "label": "15.3.0.641-e766b54"
+      }],
+      "id": "smoke-go-gauge",
+      "dependents": ["regression"]
+    }, {
+      "name": "dummy-c475c71b-538b-4565-957f-7e908621a7d6",
+      "node_type": "DUMMY",
+      "locator": "",
+      "parents": ["907bcdaf-4fe2-49ad-88a0-664efa9e1ea0"],
+      "depth": 7,
+      "instances": [],
+      "id": "c475c71b-538b-4565-957f-7e908621a7d6",
+      "dependents": ["999f0240-9c8d-46ac-af12-429e542fc7e7"]
+    }]
+  }, {
+    "nodes": [{
+      "name": "dummy-43591bc8-c4e9-4fcb-9c31-d7f690f5986d",
+      "node_type": "DUMMY",
+      "locator": "",
+      "parents": ["5408b258-1da1-442e-8149-24961086138f"],
+      "depth": 1,
+      "instances": [],
+      "id": "43591bc8-c4e9-4fcb-9c31-d7f690f5986d",
+      "dependents": ["distributions-all"]
+    }, {
+      "name": "dummy-e2e7dff9-444f-495d-9c35-6a115ab5ff11",
+      "node_type": "DUMMY",
+      "locator": "",
+      "parents": ["3785634f-641f-4c1d-be6e-d631442345f9"],
+      "depth": 2,
+      "instances": [],
+      "id": "e2e7dff9-444f-495d-9c35-6a115ab5ff11",
+      "dependents": ["distributions-all"]
+    }, {
+      "name": "dummy-a67a2f04-edc0-440c-aa6c-0dfaa14acb78",
+      "node_type": "DUMMY",
+      "locator": "",
+      "parents": ["d9a2aadc-07e7-4c0a-8a1b-75b1e700cda9"],
+      "depth": 3,
+      "instances": [],
+      "id": "a67a2f04-edc0-440c-aa6c-0dfaa14acb78",
+      "dependents": ["distributions-all"]
+    }, {
+      "name": "regression",
+      "node_type": "PIPELINE",
+      "locator": "/go/tab/pipeline/history/regression",
+      "parents": ["cf80d8337b48eb57e4fe016157c0200d49e6bb8f80c9bcd98c6ccb4f87d4870e", "acceptance-gauge", "smoke-go-gauge"],
+      "depth": 4,
+      "instances": [{
+        "stages": [{
+          "locator": "/go/pipelines/regression/430/twist/1",
+          "name": "twist",
+          "status": "Passed"
+        }],
+        "locator": "/go/pipelines/value_stream_map/regression/430",
+        "counter": 430,
+        "label": "15.3.0.641-e766b54"
+      }],
+      "id": "regression",
+      "dependents": ["distributions-all"]
+    }, {
+      "name": "dummy-999f0240-9c8d-46ac-af12-429e542fc7e7",
+      "node_type": "DUMMY",
+      "locator": "",
+      "parents": ["c475c71b-538b-4565-957f-7e908621a7d6"],
+      "depth": 5,
+      "instances": [],
+      "id": "999f0240-9c8d-46ac-af12-429e542fc7e7",
+      "dependents": ["distributions-all"]
+    }]
+  }, {
+    "nodes": [{
+      "name": "distributions-all",
+      "node_type": "PIPELINE",
+      "locator": "/go/tab/pipeline/history/distributions-all",
+      "parents": ["e2e7dff9-444f-495d-9c35-6a115ab5ff11", "43591bc8-c4e9-4fcb-9c31-d7f690f5986d", "a67a2f04-edc0-440c-aa6c-0dfaa14acb78", "regression", "999f0240-9c8d-46ac-af12-429e542fc7e7"],
+      "depth": 1,
+      "instances": [{
+        "stages": [{
+          "locator": "/go/pipelines/distributions-all/327/pre-bump-command-repository-version/1",
+          "name": "pre-bump-command-repository-version",
+          "status": "Passed"
+        }, {
+          "locator": "/go/pipelines/distributions-all/327/dist-all/1",
+          "name": "dist-all",
+          "status": "Passed"
+        }, {
+          "locator": "/go/pipelines/distributions-all/327/verify-packaged-command-repo/1",
+          "name": "verify-packaged-command-repo",
+          "status": "Passed"
+        }, {
+          "locator": "/go/pipelines/distributions-all/327/post-bump-command-repository-version/1",
+          "name": "post-bump-command-repository-version",
+          "status": "Passed"
+        }, {
+          "locator": "/go/pipelines/distributions-all/327/upload-installers/1",
+          "name": "upload-installers",
+          "status": "Failed"
+        }],
+        "locator": "/go/pipelines/value_stream_map/distributions-all/327",
+        "counter": 327,
+        "label": "15.3.0.641-e766b54"
+      }],
+      "id": "distributions-all",
+      "dependents": ["plugin-api-upload", "installer_testing"]
+    }]
+  }, {
+    "nodes": [{
+      "name": "plugin-api-upload",
+      "node_type": "PIPELINE",
+      "locator": "/go/tab/pipeline/history/plugin-api-upload",
+      "parents": ["distributions-all"],
+      "depth": 1,
+      "instances": [{
+        "stages": [{
+          "locator": "",
+          "name": "upload",
+          "status": "Unknown"
+        }],
+        "locator": "",
+        "counter": 0,
+        "label": ""
+      }],
+      "id": "plugin-api-upload",
+      "dependents": []
+    }, {
+      "name": "installer_testing",
+      "node_type": "PIPELINE",
+      "locator": "/go/tab/pipeline/history/installer_testing",
+      "parents": ["distributions-all"],
+      "depth": 2,
+      "instances": [{
+        "stages": [{
+          "locator": "",
+          "name": "fresh-install",
+          "status": "Unknown"
+        }],
+        "locator": "",
+        "counter": 0,
+        "label": ""
+      }],
+      "id": "installer_testing",
+      "dependents": []
+    }]
+  }]
+}
