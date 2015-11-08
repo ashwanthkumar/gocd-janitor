@@ -60,25 +60,30 @@ public class Janitor {
             LOG.debug("[WhiteList] - " + pipelineDependency);
         }
 
-        long deletedBytes = 0;
-        for (String pipeline : whiteList.pipelinesUnderRadar()) {
-            LOG.info("Looking for pipeline - " + pipeline);
-            File pipelineDirectory = new File(config.getArtifactStorage() + "/" + pipeline);
-            File[] versionDirs = listFiles(pipelineDirectory.getAbsolutePath());
-            for (File versionDir : versionDirs) {
-                if (!whiteList.contains(pipelineDirectory.getName(), versionDir.getName())) {
-                    deletedBytes += delete(versionDir, dryRun);
-                } else {
-                    LOG.info("Skipping since it is white listed" + versionDir.getAbsolutePath());
-                }
-            }
-        }
+        long deletedBytes = doDeletes(whiteList, config.getArtifactStorage(), dryRun);
 
         LOG.info("Total bytes deleted so far - " + FileUtils.byteCountToDisplaySize(deletedBytes));
         LOG.info("Shutting down Janitor");
     }
 
-    private long delete(File path, boolean dryRun) {
+    /* default */ long doDeletes(WhiteList whiteList, String artifactStorage, Boolean dryRun) {
+        long deletedBytes = 0;
+        for (String pipeline : whiteList.pipelinesUnderRadar()) {
+            LOG.info("Looking for pipeline - " + pipeline);
+            File pipelineDirectory = new File(artifactStorage + "/" + pipeline);
+            File[] versionDirs = listFiles(pipelineDirectory.getAbsolutePath());
+            for (File versionDir : versionDirs) {
+                if (whiteList.contains(pipelineDirectory.getName(), versionDir.getName())) {
+                    LOG.info("Skipping since it is white listed" + versionDir.getAbsolutePath());
+                } else {
+                    deletedBytes += delete(versionDir, dryRun);
+                }
+            }
+        }
+        return deletedBytes;
+    }
+
+    /* default */ long delete(File path, boolean dryRun) {
         long size = FileUtils.sizeOfDirectory(path);
         if (dryRun) {
             LOG.info("[DRY RUN] Will delete " + path.getAbsolutePath() + ", size = " + FileUtils.byteCountToDisplaySize(size));
