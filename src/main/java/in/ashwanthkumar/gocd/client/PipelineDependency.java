@@ -6,6 +6,12 @@ public class PipelineDependency {
     private String pipelineName;
     private Integer version;
 
+    public PipelineDependency() {}
+    public PipelineDependency(String pipelineName, Integer version) {
+        this.pipelineName = pipelineName;
+        this.version = version;
+    }
+
     public String getPipelineName() {
         return pipelineName;
     }
@@ -40,9 +46,6 @@ public class PipelineDependency {
 
     @Override
     public String toString() {
-        return "PipelineDependency{" +
-                "pipelineName='" + pipelineName + '\'' +
-                ", version=" + version +
-                '}';
+        return pipelineName + "@" + version;
     }
 }

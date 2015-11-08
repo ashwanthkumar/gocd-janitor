@@ -10,10 +10,7 @@ import org.slf4j.LoggerFactory;
 
 import java.net.MalformedURLException;
 import java.net.URI;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Map;
-import java.util.TreeMap;
+import java.util.*;
 
 public class MinimalisticGoClient {
     private static Logger LOG = LoggerFactory.getLogger(MinimalisticGoClient.class);
@@ -75,8 +72,8 @@ public class MinimalisticGoClient {
     }
 
     public Map<Integer, PipelineRunStatus> pipelineRunStatus(String pipeline, int offset) {
-        Map<Integer, PipelineRunStatus> result = new TreeMap<Integer, PipelineRunStatus>();
-        JSONArray history = getJSON(buildUrl("/go/api/pipelines/" + pipeline + "/history/" + offset))
+        Map<Integer, PipelineRunStatus> result = new TreeMap<>(Collections.reverseOrder());
+        JSONArray history = getJSON("/go/api/pipelines/" + pipeline + "/history/" + offset)
                 .getObject().getJSONArray("pipelines");
         for (int i = 0; i < history.length(); i++) {
             JSONObject run = history.getJSONObject(i);
@@ -84,7 +81,9 @@ public class MinimalisticGoClient {
                 continue;
 
             PipelineRunStatus status = pipelineStatusFrom(run);
-            result.put(run.getInt("counter"), status);
+            int counter = run.getInt("counter");
+            LOG.debug(pipeline + "@" + counter + " has " + status);
+            result.put(counter, status);
         }
         return result;
     }
@@ -116,7 +115,9 @@ public class MinimalisticGoClient {
     private JsonNode getJSON(String resource) {
         if (this.mockResponse != null) return this.mockResponse;
         else try {
-            return Unirest.get(resource)
+            String url = buildUrl(resource);
+            LOG.debug("Hitting " + url);
+            return Unirest.get(url)
                     .basicAuth(username, password)
                     .asJson().getBody();
         } catch (UnirestException e) {

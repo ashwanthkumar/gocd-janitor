@@ -1,0 +1,149 @@
+package in.ashwanthkumar.gocd.artifacts;
+
+import in.ashwanthkumar.gocd.artifacts.config.JanitorConfiguration;
+import in.ashwanthkumar.gocd.artifacts.config.PipelineConfig;
+import in.ashwanthkumar.gocd.client.MinimalisticGoClient;
+import in.ashwanthkumar.gocd.client.PipelineDependency;
+import in.ashwanthkumar.gocd.client.PipelineRunStatus;
+import in.ashwanthkumar.utils.collections.Lists;
+import in.ashwanthkumar.utils.func.Function;
+import in.ashwanthkumar.utils.func.Predicate;
+import in.ashwanthkumar.utils.lang.tuple.Tuple2;
+import joptsimple.OptionParser;
+import joptsimple.OptionSet;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import java.io.File;
+import java.io.IOException;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Map;
+
+import static in.ashwanthkumar.utils.collections.Lists.*;
+
+public class Janitor {
+    private static final Logger LOG = LoggerFactory.getLogger(Janitor.class);
+
+    public static void main(String[] args) throws IOException {
+        OptionParser parser = new OptionParser();
+        parser.accepts("dry-run", "Doesn't delete anything just emits the files for deletion");
+        parser.accepts("config", "Path to janitor configuration").withRequiredArg().required();
+        parser.accepts("help", "Display this help message").forHelp();
+        OptionSet options = parser.parse(args);
+        if (options.has("help")) {
+            parser.printHelpOn(System.out);
+            System.exit(0);
+        }
+        String configPath = (String) options.valueOf("config");
+        new Janitor().run(configPath, options.has("dry-run"));
+    }
+
+    public void run(String pathToConfiguration, Boolean dryRun) {
+        JanitorConfiguration config = JanitorConfiguration.load(pathToConfiguration);
+        LOG.info("Starting Janitor");
+        LOG.info("Go Server - " + config.getServer());
+        LOG.info("Artifact Dir - " + config.getArtifactStorage());
+        if (dryRun) {
+            LOG.info("Working in Dry run mode, we will not delete anything in this run.");
+        }
+
+        final MinimalisticGoClient client = new MinimalisticGoClient(config.getServer(), config.getUsername(), config.getPassword());
+
+        List<Tuple2<String, List<Integer>>> requiredPipelineAndVersions = mandatoryPipelineVersions(client, config.getPipelines());
+        WhiteList whiteList = computeWhiteList(client, requiredPipelineAndVersions);
+
+        LOG.info("Number of white listed pipeline instances - " + whiteList.size());
+        for (PipelineDependency pipelineDependency : whiteList.it()) {
+            LOG.debug("[WhiteList] - " + pipelineDependency);
+        }
+
+        for (String pipeline : whiteList.pipelinesUnderRadar()) {
+            LOG.info("Looking for pipeline - " + pipeline);
+            File pipelineDirectory = new File(config.getArtifactStorage() + "/" + pipeline);
+            File[] versionDirs = listFiles(pipelineDirectory.getAbsolutePath());
+            for (File versionDir : versionDirs) {
+                if (!whiteList.contains(pipelineDirectory.getName(), versionDir.getName())) {
+                    delete(versionDir, dryRun);
+                } else {
+                    LOG.info("Skipping since it is white listed" + versionDir.getAbsolutePath());
+                }
+            }
+        }
+
+        LOG.info("Shutting down Janitor");
+    }
+
+    private void delete(File path, boolean dryRun) {
+        if (!dryRun) {
+            LOG.info("Deleting " + path.getAbsolutePath());
+//            try {
+//                FileUtils.deleteDirectory(path);
+//            } catch (IOException e) {
+//                LOG.error(e.getMessage(), e);
+//                throw new RuntimeException(e);
+//            }
+        } else {
+            LOG.info("[DRY RUN] Deleting " + path.getAbsolutePath());
+        }
+    }
+
+    /* default */ List<Tuple2<String, List<Integer>>> mandatoryPipelineVersions(final MinimalisticGoClient client, List<PipelineConfig> pipelines) {
+        return map(pipelines, new Function<PipelineConfig, Tuple2<String, List<Integer>>>() {
+            @Override
+            public Tuple2<String, List<Integer>> apply(PipelineConfig pipelineConfig) {
+                List<Integer> versions = new ArrayList<>();
+                int offset = 0;
+                while (versions.size() < pipelineConfig.getRunsToPersist()) {
+                    versions.addAll(
+                            take(map(filter(client.pipelineRunStatus(pipelineConfig.getName(), offset).entrySet(), new Predicate<Map.Entry<Integer, PipelineRunStatus>>() {
+                                @Override
+                                public Boolean apply(Map.Entry<Integer, PipelineRunStatus> entry) {
+                                    return entry.getValue() == PipelineRunStatus.PASSED;
+                                }
+                            }), new Function<Map.Entry<Integer, PipelineRunStatus>, Integer>() {
+                                @Override
+                                public Integer apply(Map.Entry<Integer, PipelineRunStatus> entry) {
+                                    return entry.getKey();
+                                }
+                            }), pipelineConfig.getRunsToPersist())
+                    );
+                    offset += 10; // default page size is 10
+                }
+                return new Tuple2<>(pipelineConfig.getName(), versions);
+            }
+        });
+    }
+
+    /* default */ WhiteList computeWhiteList(final MinimalisticGoClient client, List<Tuple2<String, List<Integer>>> requiredPipelineAndVersions) {
+        return new WhiteList(flatten(map(requiredPipelineAndVersions, new Function<Tuple2<String, List<Integer>>, List<PipelineDependency>>() {
+            @Override
+            public List<PipelineDependency> apply(Tuple2<String, List<Integer>> tuple) {
+                final String pipelineName = tuple._1();
+                List<Integer> versions = tuple._2();
+                return flatten(map(versions, new Function<Integer, List<PipelineDependency>>() {
+                    @Override
+                    public List<PipelineDependency> apply(Integer version) {
+                        return client.upstreamDependencies(pipelineName, version);
+                    }
+                }));
+            }
+        })));
+    }
+
+    private File[] listFiles(String path) {
+        File[] files = new File(path).listFiles();
+        if (files == null) throw new RuntimeException(path + " did not yield any pipeline run directories");
+        else return files;
+    }
+
+    private <T> List<T> take(List<T> list, int k) {
+        List<T> topK = Lists.<T>Nil();
+        for (T aList : list) {
+            if (topK.size() < k) topK.add(aList);
+            else break;
+        }
+        return topK;
+    }
+
+}
