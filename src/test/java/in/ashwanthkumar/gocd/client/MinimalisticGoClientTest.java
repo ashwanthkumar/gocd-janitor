@@ -39,7 +39,8 @@ public class MinimalisticGoClientTest {
         MinimalisticGoClient client = new MinimalisticGoClient("http://server", "foo", "bar");
         client.setMockResponse(TestUtils.readFileAsJSON("/responses/pipeline_value_stream_map.json"));
         List<PipelineDependency> pipelineDependencies = client.upstreamDependencies("distributions-all", 327);
-        assertThat(pipelineDependencies.size(), is(8));
+        assertThat(pipelineDependencies.size(), is(9));
+        assertThat(pipelineDependencies, hasItem(new PipelineDependency().setPipelineName("distributions-all").setVersion(327)));
         assertThat(pipelineDependencies, hasItem(new PipelineDependency().setPipelineName("create-maven-release").setVersion(18)));
         assertThat(pipelineDependencies, hasItem(new PipelineDependency().setPipelineName("build-linux").setVersion(641)));
         assertThat(pipelineDependencies, hasItem(new PipelineDependency().setPipelineName("build-windows").setVersion(566)));

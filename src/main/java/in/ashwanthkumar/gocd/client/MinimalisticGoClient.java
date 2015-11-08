@@ -3,6 +3,7 @@ package in.ashwanthkumar.gocd.client;
 import com.mashape.unirest.http.JsonNode;
 import com.mashape.unirest.http.Unirest;
 import com.mashape.unirest.http.exceptions.UnirestException;
+import in.ashwanthkumar.utils.collections.Lists;
 import org.json.JSONArray;
 import org.json.JSONObject;
 import org.slf4j.Logger;
@@ -30,8 +31,13 @@ public class MinimalisticGoClient {
 
     public List<PipelineDependency> upstreamDependencies(String pipeline, int version) {
         JSONObject result = getJSON("/go/pipelines/value_stream_map/" + pipeline + "/" + version + ".json").getObject();
+        List<PipelineDependency> dependencies = Lists.of(new PipelineDependency(pipeline, version));
+
+        // happens typically when we check for next run
+        // in case of connection errors it should fail before this
+        if(!result.has("levels")) return dependencies;
+
         JSONArray levels = result.getJSONArray("levels");
-        ArrayList<PipelineDependency> dependencies = new ArrayList<>();
         for (int i = 0; i < levels.length(); i++) {
             JSONArray nodes = levels.getJSONObject(i).getJSONArray("nodes");
             for (int j = 0; j < nodes.length(); j++) {
