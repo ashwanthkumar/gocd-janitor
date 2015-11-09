@@ -17,9 +17,13 @@ public class PipelineConfig {
         if (config.hasPath("runs"))
             runs = config.getInt("runs");
 
-        return new PipelineConfig()
-                .setName(name)
+        return new PipelineConfig(name)
                 .setRunsToPersist(runs);
+    }
+
+    public PipelineConfig(String name) {
+        this.name = name;
+        this.runsToPersist = DEFAULT_RUN_LIMIT;
     }
 
     public String getName() {

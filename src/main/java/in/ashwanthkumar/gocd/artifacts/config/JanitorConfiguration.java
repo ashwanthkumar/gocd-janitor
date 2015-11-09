@@ -3,11 +3,14 @@ package in.ashwanthkumar.gocd.artifacts.config;
 import com.typesafe.config.Config;
 import com.typesafe.config.ConfigFactory;
 import in.ashwanthkumar.utils.collections.Lists;
+import in.ashwanthkumar.utils.collections.Sets;
 import in.ashwanthkumar.utils.func.Function;
 
 import java.io.File;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Objects;
+import java.util.Set;
 
 public class JanitorConfiguration {
     private String server;
@@ -15,6 +18,7 @@ public class JanitorConfiguration {
     private String password;
     private String artifactStorage;
     private List<PipelineConfig> pipelines;
+    private Set<String> pipelineNames;
 
     public static JanitorConfiguration load(String file) {
         return load(ConfigFactory.parseFile(new File(file)));
@@ -61,6 +65,7 @@ public class JanitorConfiguration {
 
     public JanitorConfiguration setPipelines(List<PipelineConfig> pipelines) {
         this.pipelines = pipelines;
+        setPipelineNames();
         return this;
     }
 
@@ -82,6 +87,10 @@ public class JanitorConfiguration {
         return this;
     }
 
+    public boolean hasPipeline(String pipeline) {
+        return pipelineNames.contains(pipeline);
+    }
+
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;
@@ -97,5 +106,14 @@ public class JanitorConfiguration {
     @Override
     public int hashCode() {
         return Objects.hash(server, username, password, artifactStorage, pipelines);
+    }
+
+    void setPipelineNames() {
+        this.pipelineNames =  new HashSet<>(Lists.map(pipelines, new Function<PipelineConfig, String>() {
+            @Override
+            public String apply(PipelineConfig pipelineConfig) {
+                return pipelineConfig.getName();
+            }
+        }));
     }
 }

@@ -42,7 +42,7 @@ public class Janitor {
     }
 
     public void run(String pathToConfiguration, Boolean dryRun) {
-        JanitorConfiguration config = JanitorConfiguration.load(pathToConfiguration);
+        final JanitorConfiguration config = JanitorConfiguration.load(pathToConfiguration);
         LOG.info("Starting Janitor");
         LOG.info("Go Server - " + config.getServer());
         LOG.info("Artifact Dir - " + config.getArtifactStorage());
@@ -52,7 +52,8 @@ public class Janitor {
 
         final MinimalisticGoClient client = new MinimalisticGoClient(config.getServer(), config.getUsername(), config.getPassword());
 
-        List<Tuple2<String, List<Integer>>> requiredPipelineAndVersions = mandatoryPipelineVersions(client, config.getPipelines());
+        List<PipelineConfig> pipelinesNotInConfig = pipelinesNotInConfiguration(client, config);
+        List<Tuple2<String, List<Integer>>> requiredPipelineAndVersions = mandatoryPipelineVersions(client, concat(config.getPipelines(), pipelinesNotInConfig));
         WhiteList whiteList = computeWhiteList(client, requiredPipelineAndVersions);
 
         LOG.info("Number of white listed pipeline instances - " + whiteList.size());
@@ -64,6 +65,22 @@ public class Janitor {
 
         LOG.info("Total bytes deleted so far - " + FileUtils.byteCountToDisplaySize(deletedBytes));
         LOG.info("Shutting down Janitor");
+    }
+
+    /* default */ List<PipelineConfig> pipelinesNotInConfiguration(MinimalisticGoClient client, final JanitorConfiguration config) {
+        return map(
+                filter(client.allPipelineNames(), new Predicate<String>() {
+                    @Override
+                    public Boolean apply(String pipeline) {
+                        return !config.hasPipeline(pipeline);
+                    }
+                }),
+                new Function<String, PipelineConfig>() {
+                    @Override
+                    public PipelineConfig apply(String pipelineName) {
+                        return new PipelineConfig(pipelineName);
+                    }
+                });
     }
 
     /* default */ long doDeletes(WhiteList whiteList, String artifactStorage, Boolean dryRun) {
