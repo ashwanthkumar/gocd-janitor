@@ -1,0 +1,20 @@
+<pipelines>
+    <link rel="self" href="http://build.go.cd/go/api/pipelines.xml"/>
+    <pipeline href="http://build.go.cd/go/api/pipelines/create-maven-release/stages.xml" />
+    <pipeline href="http://build.go.cd/go/api/pipelines/build-linux/stages.xml" />
+    <pipeline href="http://build.go.cd/go/api/pipelines/build-windows/stages.xml" />
+    <pipeline href="http://build.go.cd/go/api/pipelines/plugins/stages.xml" />
+    <pipeline href="http://build.go.cd/go/api/pipelines/qa-packages/stages.xml" />
+    <pipeline href="http://build.go.cd/go/api/pipelines/smoke-go-gauge/stages.xml" />
+    <pipeline href="http://build.go.cd/go/api/pipelines/acceptance-gauge/stages.xml" />
+    <pipeline href="http://build.go.cd/go/api/pipelines/regression/stages.xml" />
+    <pipeline href="http://build.go.cd/go/api/pipelines/distributions-all/stages.xml" />
+    <pipeline href="http://build.go.cd/go/api/pipelines/goutils/stages.xml" />
+    <pipeline href="http://build.go.cd/go/api/pipelines/plugin-api-upload/stages.xml" />
+    <pipeline href="http://build.go.cd/go/api/pipelines/installer_testing/stages.xml" />
+    <pipeline href="http://build.go.cd/go/api/pipelines/user-documentation/stages.xml" />
+    <pipeline href="http://build.go.cd/go/api/pipelines/smoke/stages.xml" />
+    <pipeline href="http://build.go.cd/go/api/pipelines/acceptance/stages.xml" />
+    <pipeline href="http://build.go.cd/go/api/pipelines/create-maven-release-PR/stages.xml" />
+    <pipeline href="http://build.go.cd/go/api/pipelines/build-linux-PR/stages.xml" />
+</pipelines>

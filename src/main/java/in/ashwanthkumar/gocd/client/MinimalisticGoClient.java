@@ -3,15 +3,23 @@ package in.ashwanthkumar.gocd.client;
 import com.mashape.unirest.http.JsonNode;
 import com.mashape.unirest.http.Unirest;
 import com.mashape.unirest.http.exceptions.UnirestException;
+import com.mashape.unirest.request.GetRequest;
 import in.ashwanthkumar.utils.collections.Lists;
+import in.ashwanthkumar.utils.func.Function;
 import org.json.JSONArray;
 import org.json.JSONObject;
+import org.jsoup.Jsoup;
+import org.jsoup.nodes.Document;
+import org.jsoup.nodes.Element;
+import org.jsoup.select.Elements;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.net.MalformedURLException;
 import java.net.URI;
 import java.util.*;
+
+import static in.ashwanthkumar.utils.collections.Lists.map;
 
 public class MinimalisticGoClient {
     private static Logger LOG = LoggerFactory.getLogger(MinimalisticGoClient.class);
@@ -27,6 +35,20 @@ public class MinimalisticGoClient {
         this.server = server;
         this.username = username;
         this.password = password;
+    }
+
+    public List<String> allPipelineNames() {
+        String xml = getXML("/go/api/pipelines.xml");
+        Document doc = Jsoup.parse(xml);
+        Elements pipelineElements = doc.select("pipeline[href]");
+        return map(pipelineElements, new Function<Element, String>() {
+            @Override
+            public String apply(Element element) {
+                String href = element.attr("href");
+                String apiPrefix = "/go/api/pipelines/";
+                return href.substring(href.indexOf(apiPrefix) + apiPrefix.length(), href.indexOf("/stages.xml"));
+            }
+        });
     }
 
     public List<PipelineDependency> upstreamDependencies(String pipeline, int version) {
@@ -121,15 +143,28 @@ public class MinimalisticGoClient {
     private JsonNode getJSON(String resource) {
         if (this.mockResponse != null) return new JsonNode(this.mockResponse);
         else try {
-            String url = buildUrl(resource);
-            LOG.debug("Hitting " + url);
-            return Unirest.get(url)
-                    .basicAuth(username, password)
-                    .asJson().getBody();
+            return invokeGET(resource).asJson().getBody();
         } catch (UnirestException e) {
             LOG.error(e.getMessage());
             throw new RuntimeException(e.getMessage(), e);
         }
+    }
+
+    private String getXML(String resource) {
+        if (this.mockResponse != null) return this.mockResponse;
+        else try {
+            return invokeGET(resource).asString().getBody();
+        } catch (UnirestException e) {
+            LOG.error(e.getMessage());
+            throw new RuntimeException(e.getMessage(), e);
+        }
+    }
+
+    private GetRequest invokeGET(String resource) throws UnirestException {
+        String url = buildUrl(resource);
+        LOG.debug("Hitting " + url);
+        return Unirest.get(url)
+                .basicAuth(username, password);
     }
 
     private String buildUrl(String resource) {

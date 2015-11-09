@@ -51,4 +51,29 @@ public class MinimalisticGoClientTest {
         assertThat(pipelineDependencies, hasItem(new PipelineDependency().setPipelineName("regression").setVersion(430)));
     }
 
+    @Test
+    public void shouldParseAllPipelineNames() throws IOException {
+        MinimalisticGoClient client = new MinimalisticGoClient("http://server", "foo", "bar");
+        client.setMockResponse(TestUtils.readFile("/responses/pipelines.xml"));
+        List<String> pipelines = client.allPipelineNames();
+        assertThat(pipelines.size(), is(17));
+        assertThat(pipelines, hasItem("create-maven-release"));
+        assertThat(pipelines, hasItem("build-linux"));
+        assertThat(pipelines, hasItem("build-windows"));
+        assertThat(pipelines, hasItem("plugins"));
+        assertThat(pipelines, hasItem("qa-packages"));
+        assertThat(pipelines, hasItem("smoke-go-gauge"));
+        assertThat(pipelines, hasItem("acceptance-gauge"));
+        assertThat(pipelines, hasItem("regression"));
+        assertThat(pipelines, hasItem("distributions-all"));
+        assertThat(pipelines, hasItem("goutils"));
+        assertThat(pipelines, hasItem("plugin-api-upload"));
+        assertThat(pipelines, hasItem("installer_testing"));
+        assertThat(pipelines, hasItem("user-documentation"));
+        assertThat(pipelines, hasItem("smoke"));
+        assertThat(pipelines, hasItem("acceptance"));
+        assertThat(pipelines, hasItem("create-maven-release-PR"));
+        assertThat(pipelines, hasItem("build-linux-PR"));
+    }
+
 }
