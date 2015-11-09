@@ -125,8 +125,10 @@ public class Janitor {
                 int offset = 0;
                 while (versions.size() < pipelineConfig.getRunsToPersist()) {
                     Set<Map.Entry<Integer, PipelineRunStatus>> pipelineStatuses = client.pipelineRunStatus(pipelineConfig.getName(), offset).entrySet();
-                    versions.add(head(pipelineStatuses).getKey());     // Latest run version irrespective of its status will be added to whitelist
-                    versions.add(head(pipelineStatuses).getKey() + 1); // current run of the pipeline (if any) - History endpoint doesn't expose current running pipeline info
+                    if(!pipelineStatuses.isEmpty()) {
+                        versions.add(head(pipelineStatuses).getKey());     // Latest run version irrespective of its status will be added to whitelist
+                        versions.add(head(pipelineStatuses).getKey() + 1); // current run of the pipeline (if any) - History endpoint doesn't expose current running pipeline info
+                    }
 
                     versions.addAll(
                             take(map(filter(pipelineStatuses, new Predicate<Map.Entry<Integer, PipelineRunStatus>>() {
