@@ -15,6 +15,7 @@ public class JanitorConfigurationTest {
         assertThat(configuration.getArtifactStorage(), is("/data/go-server/artifacts/"));
         assertThat(configuration.getUsername(), is("foo"));
         assertThat(configuration.getPassword(), is("bar"));
+        assertThat(configuration.getPipelineVersions(), is(5));
 
         PipelineConfig expected1 = new PipelineConfig("Pipeline1").setRunsToPersist(2);
         assertThat(configuration.getPipelines(), hasItem(expected1));

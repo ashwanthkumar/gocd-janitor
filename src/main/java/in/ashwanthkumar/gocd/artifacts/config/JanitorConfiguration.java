@@ -17,6 +17,7 @@ public class JanitorConfiguration {
     private String username;
     private String password;
     private String artifactStorage;
+    private Integer pipelineVersions;
     private List<PipelineConfig> pipelines;
     private Set<String> pipelineNames;
 
@@ -38,6 +39,7 @@ public class JanitorConfiguration {
                 .setArtifactStorage(config.getString("artifacts-dir"))
                 .setUsername(config.getString("username"))
                 .setPassword(config.getString("password"))
+                .setPipelineVersions(config.getInt("pipeline-versions"))
                 .setPipelines(pipelines);
     }
 
@@ -84,6 +86,15 @@ public class JanitorConfiguration {
 
     public JanitorConfiguration setPassword(String password) {
         this.password = password;
+        return this;
+    }
+
+    public Integer getPipelineVersions() {
+        return pipelineVersions;
+    }
+
+    public JanitorConfiguration setPipelineVersions(Integer pipelineVersions) {
+        this.pipelineVersions = pipelineVersions;
         return this;
     }
 
