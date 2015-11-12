@@ -1,12 +1,11 @@
 [![Build Status](https://snap-ci.com/ashwanthkumar/gocd-cleanup-artifacts/branch/master/build_image)](https://snap-ci.com/ashwanthkumar/gocd-cleanup-artifacts/branch/master)
 
-# gocd-cleanup-artifacts
-Tiny program that helps you with cleaning up artifacts on GoCD servers. There was a [discussion](https://groups.google.com/forum/#!topic/go-cd/HfOY_74OKhI/discussion) on GoCD mailing list and my own not-so-good experience managing artifacts on GoCD led me into this.
+# gocd-janitor
+Tiny program that helps you with cleaning up artifacts on GoCD servers. There was a [discussion](https://groups.google.com/forum/#!topic/go-cd/HfOY_74OKhI/discussion) on GoCD mailing list and my own not-so-good experience managing artifacts on GoCD led me to this.
 
 ## How does Janitor work?
-- Have a whitelist of pipelines which can't fail because of Artifacts missing error
-- Specify how many versions of the pipeline and all it's upstream dependencies you want to keep
-- We keep the union of above list and the latest 2 versions of all the pipelines and delete the rest
+- We try to keep a default set of runs for each pipeline and all it's upstream dependencies.
+- You can also override the value of runs to keep per pipeline in the configuration
 
 ## Usage
 ```
@@ -26,16 +25,20 @@ $ java -cp target/gocd-cleanup-artifacts-0.0.1-jar-with-dependencies.jar in.ashw
 
 ## Configuration
 ```hocon
-gocd.cleanup {
+gocd.janitor {
   server = "http://ci-server:8080"
   username = "admin"
   password = "badget"
+  
+  # Path to the location where we've all the pipeline directories
   artifacts-dir = "/data/go-server/artifacts/pipelines/"
+
+  # Default number of pipeline versions to keep for all the pipelines
+  pipeline-versions = 5
 
   pipelines = [{
     name = "Pipeline1"
     # Number of successful runs of this pipeline and all it's upstream dependencies you want to keep
-    # This number can't be greater than PipelineConfig.MAX_RUN_LIMIT (5)
     runs = 2
   }]
 }
@@ -46,7 +49,7 @@ gocd.cleanup {
 It is expected to be run on the go server machine where the artifacts are stored. If you run agents on the server, then you create a pipeline and assign it to an agent on the server machine.
 
 ### Do I need to add every new pipeline being created to the config? 
-Generally No, we only do cleanup for the pipelines that are either direct / transitive dependencies of the pipelines specified in the configuration. But if your new pipeline has the same common dependency as the one specified in the configuration, then you might want to add the new pipeline to the config since they might be dependent on various versions of upstream pipelines.  
+No, we will automatically pick up the new pipeline on the next run of the Janitor.
 
 ### Is there a way to run the Janitor without deleting anything? 
 Yes, you could run the janitor with `--dry-run` flag. It doesn't delete but just print the directories that will be deleted.
@@ -55,15 +58,15 @@ Yes, you could run the janitor with `--dry-run` flag. It doesn't delete but just
 No, Janitor doesn't keep stage run logs. If you want this feature, please raise it as an Issue or even better send a Pull Request.
 
 ### How does Janitor decide if the Pipeline run is a Failure or a Success?
-Since there isn't an universal way to say if the pipeline has failed or not, because a stage could fail, but we could deem it unimportant (for the time being) and continue the pipeline.
+Since there is no universal way to say if the pipeline has failed or not, because a stage could fail, but we could deem it unimportant (for the time being) and continue rest of the pipeline.
 
-Janitor is sensitive about what it call failures of a pipeline. The conditions are as follows
+Janitor is sensitive about what it considers as failures. The conditions are as follows
 
 1. Any 1 stage failure is considered a pipeline failure.
-2. If the pipeline doesn't run to completion (paused or locked) is considered a failure.
+2. If the pipeline doesn't run to completion (because of it being paused or locked) it is considered a failure.
 
 ### Does Janitor respect the "Never Cleanup Artifacts" option of the pipeline? 
-No. That's inside the GoCD's configuration and we don't have a way to syncing it yet. If you want this feature, please raise it as an Issue or even better send a Pull Request.
+No. That's inside the GoCD's configuration and we don't have a way to syncing it yet. If you want this feature, please raise it as an Issue or even better send a Pull Request :smile:
 
 ## License
 Licensed under the Apache License, Version 2.0: http://www.apache.org/licenses/LICENSE-2.0
