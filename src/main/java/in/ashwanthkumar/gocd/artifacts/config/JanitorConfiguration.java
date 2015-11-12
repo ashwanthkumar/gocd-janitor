@@ -27,20 +27,22 @@ public class JanitorConfiguration {
 
     public static JanitorConfiguration load(Config config) {
         config = config.getConfig("gocd.cleanup");
-        List<PipelineConfig> pipelines = Lists.map((List<Config>) config.getConfigList("pipelines"), new Function<Config, PipelineConfig>() {
-            @Override
-            public PipelineConfig apply(Config config) {
-                return PipelineConfig.fromConfig(config);
-            }
-        });
 
-        return new JanitorConfiguration()
+        final JanitorConfiguration janitorConfiguration = new JanitorConfiguration()
                 .setServer(config.getString("server"))
                 .setArtifactStorage(config.getString("artifacts-dir"))
                 .setUsername(config.getString("username"))
                 .setPassword(config.getString("password"))
-                .setPipelineVersions(config.getInt("pipeline-versions"))
-                .setPipelines(pipelines);
+                .setPipelineVersions(config.getInt("pipeline-versions"));
+
+        List<PipelineConfig> pipelines = Lists.map((List<Config>) config.getConfigList("pipelines"), new Function<Config, PipelineConfig>() {
+            @Override
+            public PipelineConfig apply(Config config) {
+                return PipelineConfig.fromConfig(janitorConfiguration.getPipelineVersions(),config);
+            }
+        });
+
+        return janitorConfiguration.setPipelines(pipelines);
     }
 
     public String getServer() {

@@ -17,10 +17,10 @@ public class JanitorConfigurationTest {
         assertThat(configuration.getPassword(), is("bar"));
         assertThat(configuration.getPipelineVersions(), is(5));
 
-        PipelineConfig expected1 = new PipelineConfig("Pipeline1").setRunsToPersist(2);
+        PipelineConfig expected1 = new PipelineConfig("Pipeline1", 2);
         assertThat(configuration.getPipelines(), hasItem(expected1));
 
-        PipelineConfig expected2 = new PipelineConfig("Pipeline2").setRunsToPersist(5);
+        PipelineConfig expected2 = new PipelineConfig("Pipeline2", 5);
         assertThat(configuration.getPipelines(), hasItem(expected2));
     }
 

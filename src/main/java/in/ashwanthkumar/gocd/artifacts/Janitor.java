@@ -78,7 +78,7 @@ public class Janitor {
                 new Function<String, PipelineConfig>() {
                     @Override
                     public PipelineConfig apply(String pipelineName) {
-                        return new PipelineConfig(pipelineName);
+                        return new PipelineConfig(pipelineName, config.getPipelineVersions());
                     }
                 });
     }

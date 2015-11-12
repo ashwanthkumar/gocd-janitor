@@ -5,25 +5,22 @@ import com.typesafe.config.Config;
 import java.util.Objects;
 
 public class PipelineConfig {
-    public static final int DEFAULT_RUN_LIMIT = 2;
-
     private String name;
     private int runsToPersist;
 
-    public static PipelineConfig fromConfig(Config config) {
+    public static PipelineConfig fromConfig(Integer defaultPipelineRuns, Config config) {
         String name = config.getString("name");
 
-        int runs = DEFAULT_RUN_LIMIT; // default value
+        int runs = defaultPipelineRuns; // default value
         if (config.hasPath("runs"))
             runs = config.getInt("runs");
 
-        return new PipelineConfig(name)
-                .setRunsToPersist(runs);
+        return new PipelineConfig(name, runs);
     }
 
-    public PipelineConfig(String name) {
+    public PipelineConfig(String name, Integer defaultPipelineRuns) {
         this.name = name;
-        this.runsToPersist = DEFAULT_RUN_LIMIT;
+        this.runsToPersist = defaultPipelineRuns;
     }
 
     public String getName() {
