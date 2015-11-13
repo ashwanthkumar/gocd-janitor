@@ -14,8 +14,13 @@ $ java -cp target/gocd-cleanup-artifacts-0.0.1-jar-with-dependencies.jar in.ashw
 Option (* = required)  Description                           
 ---------------------  -----------                           
 * --config             Path to janitor configuration         
+--delete-artifacts     Delete the artifacts                  
 --dry-run              Doesn't delete anything just emits the
                          files for deletion                  
+--move-artifacts       Move the artifacts to another         
+                         location. We always move the files  
+                         inside the <destination path> +     
+                         current timestamp                   
 --help                 Display this help message             
 
 ----

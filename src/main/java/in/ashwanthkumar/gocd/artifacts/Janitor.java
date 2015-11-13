@@ -32,9 +32,9 @@ public class Janitor {
         OptionParser parser = new OptionParser();
         parser.accepts("dry-run", "Doesn't delete anything just emits the files for deletion");
         parser.accepts("config", "Path to janitor configuration").withRequiredArg().required();
-        parser.accepts("help", "Display this help message").forHelp();
         parser.accepts("delete-artifacts", "Delete the artifacts");
-        parser.accepts("move-artifacts", "Move the artifacts to another location. We always move the files inside the <destination path> + current timestamp").withRequiredArg();
+        parser.accepts("move-artifacts", "Move the artifacts to <destination path>").withRequiredArg();
+        parser.accepts("help", "Display this help message").forHelp();
         OptionSet options = parser.parse(args);
         if (options.has("help")) {
             parser.printHelpOn(System.out);
@@ -50,8 +50,7 @@ public class Janitor {
         if (options.has("delete-artifacts")) {
             action = new DeleteAction("cruise-output");
         } else if (options.has("move-artifacts")) {
-            long timestamp = new Date().getTime();
-            action = new MoveAction(new File(options.valueOf("move-artifacts") + "/" + timestamp));
+            action = new MoveAction(new File((String) options.valueOf("move-artifacts")));
         }
 
         if (action == null) {
