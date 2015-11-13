@@ -7,6 +7,7 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 
+import static in.ashwanthkumar.gocd.actions.ActionUtils.createFile;
 import static org.hamcrest.CoreMatchers.is;
 import static org.junit.Assert.assertThat;
 
@@ -32,26 +33,6 @@ public class DeleteActionTest {
         assertThat(new File(whiteListed1).exists(), is(true));
         assertThat(new File(whiteListed2).exists(), is(true));
         assertThat(new File(whiteListed3).exists(), is(true));
-    }
-
-    private String createFile(Path tempDirectory, String... paths) throws IOException {
-        String path = filePath(tempDirectory, paths);
-        File file = new File(path);
-        boolean mkdirs = file.getParentFile().mkdirs();
-        assertThat(mkdirs, is(true));
-        boolean newFileCreated = file.createNewFile();
-        assertThat(newFileCreated, is(true));
-        return path;
-    }
-
-    private String filePath(Path tempDirectory, String... paths) {
-        StringBuilder builder = new StringBuilder();
-        for (String path : paths) {
-            builder.append(path)
-                    .append("/");
-
-        }
-        return tempDirectory.toFile().getAbsolutePath() + "/" + builder.toString();
     }
 
 
