@@ -40,6 +40,28 @@ public class MoveActionTest {
         assertThat(path(destinationDirectory.toFile(), "stage-3", "bar", "baz").exists(), is(true));
     }
 
+    @Test
+    public void shouldNotMoveWhenRunningOnDryMode() throws IOException {
+        Path sourceDirectory = Files.createTempDirectory("source");
+        createFile(sourceDirectory, "stage-1", "cruise-output", "console.log");
+        createFile(sourceDirectory, "stage-1", "blah", "blah");
+        createFile(sourceDirectory, "stage-2", "cruise-output", "console.log");
+        createFile(sourceDirectory, "stage-2", "foo", "bar");
+        createFile(sourceDirectory, "stage-3", "cruise-output", "console.log");
+        createFile(sourceDirectory, "stage-3", "bar", "baz");
+
+        Path destinationDirectory = Files.createTempDirectory("destination");
+        FileUtils.deleteDirectory(destinationDirectory.toFile());
+
+        MoveAction action = new MoveAction(destinationDirectory.toFile());
+        long size = action.invoke(sourceDirectory.toFile(), true);
+        assertThat(size, is(0l));
+
+        assertThat(sourceDirectory.toFile().exists(), is(true));
+        assertThat(destinationDirectory.toFile().exists(), is(false));
+    }
+
+
     public File path(File path, String... suffixes) {
         StringBuilder builder = new StringBuilder();
         for (String suffix : suffixes) {

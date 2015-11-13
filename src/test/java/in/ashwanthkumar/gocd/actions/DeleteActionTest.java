@@ -35,5 +35,30 @@ public class DeleteActionTest {
         assertThat(new File(whiteListed3).exists(), is(true));
     }
 
+    @Test
+    public void shouldNotDeleteAnythingWhenRunningOnDryMode() throws IOException {
+        Path tempDirectory = Files.createTempDirectory("foo");
+        String whiteListed1 = createFile(tempDirectory, "stage-1", "cruise-output", "console.log");
+        String fileToDelete1 = createFile(tempDirectory, "stage-1", "blah", "blah");
+        String whiteListed2 = createFile(tempDirectory, "stage-2", "cruise-output", "console.log");
+        String fileToDelete2 = createFile(tempDirectory, "stage-2", "foo", "bar");
+        String whiteListed3 = createFile(tempDirectory, "stage-3", "cruise-output", "console.log");
+        String fileToDelete3 = createFile(tempDirectory, "stage-3", "bar", "baz");
+        DeleteAction action = new DeleteAction("cruise-output");
+
+        long size = action.invoke(tempDirectory.toFile(), true);
+        assertThat(size, is(0l));
+
+        assertThat(new File(fileToDelete1).exists(), is(true));
+        assertThat(new File(fileToDelete2).exists(), is(true));
+        assertThat(new File(fileToDelete3).exists(), is(true));
+
+        assertThat(new File(whiteListed1).exists(), is(true));
+        assertThat(new File(whiteListed2).exists(), is(true));
+        assertThat(new File(whiteListed3).exists(), is(true));
+
+    }
+
+
 
 }
