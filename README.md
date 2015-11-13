@@ -10,7 +10,7 @@ Tiny program that helps you with cleaning up artifacts on GoCD servers. There wa
 ## Usage
 ```
 $ mvn clean package
-$ java -cp target/gocd-cleanup-artifacts-0.0.1-jar-with-dependencies.jar in.ashwanthkumar.gocd.artifacts.Janitor --help
+$ java -cp target/gocd-janitor-0.0.1-jar-with-dependencies.jar in.ashwanthkumar.gocd.artifacts.Janitor --help
 Option (* = required)  Description                           
 ---------------------  -----------                           
 * --config             Path to janitor configuration         
@@ -22,7 +22,7 @@ Option (* = required)  Description
 
 ----
 
-$ java -cp target/gocd-cleanup-artifacts-0.0.1-jar-with-dependencies.jar in.ashwanthkumar.gocd.artifacts.Janitor --conf gocd-purge.conf --dry-run --delete-artifacts
+$ java -cp target/gocd-janitor-0.0.1-jar-with-dependencies.jar in.ashwanthkumar.gocd.artifacts.Janitor --conf gocd-purge.conf --dry-run --delete-artifacts
 ```
 
 ## Configuration
