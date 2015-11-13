@@ -1,6 +1,5 @@
 package in.ashwanthkumar.gocd.actions;
 
-import org.apache.commons.io.FileUtils;
 import org.junit.Test;
 
 import java.io.File;
@@ -9,19 +8,19 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 
 import static org.hamcrest.CoreMatchers.is;
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertThat;
 
 public class DeleteActionTest {
     @Test
     public void shouldIgnoreWhiteListedFilesOrDirectories() throws IOException {
         Path tempDirectory = Files.createTempDirectory("foo");
-        String whiteListed1 = createFile(tempDirectory, "stage-1", "crusie-output", "console.log");
+        String whiteListed1 = createFile(tempDirectory, "stage-1", "cruise-output", "console.log");
         String fileToDelete1 = createFile(tempDirectory, "stage-1", "blah", "blah");
-        String whiteListed2 = createFile(tempDirectory, "stage-2", "crusie-output", "console.log");
+        String whiteListed2 = createFile(tempDirectory, "stage-2", "cruise-output", "console.log");
         String fileToDelete2 = createFile(tempDirectory, "stage-2", "foo", "bar");
-        String whiteListed3 = createFile(tempDirectory, "stage-3", "crusie-output", "console.log");
+        String whiteListed3 = createFile(tempDirectory, "stage-3", "cruise-output", "console.log");
         String fileToDelete3 = createFile(tempDirectory, "stage-3", "bar", "baz");
-        DeleteAction action = new DeleteAction("crusie-output");
+        DeleteAction action = new DeleteAction("cruise-output");
 
         long size = action.invoke(tempDirectory.toFile(), false);
         assertThat(size, is(0l));
