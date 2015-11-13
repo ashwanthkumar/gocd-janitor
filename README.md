@@ -17,10 +17,7 @@ Option (* = required)  Description
 --delete-artifacts     Delete the artifacts                  
 --dry-run              Doesn't delete anything just emits the
                          files for deletion                  
---move-artifacts       Move the artifacts to another         
-                         location. We always move the files  
-                         inside the <destination path> +     
-                         current timestamp                   
+--move-artifacts       Move the artifacts to <destination path>
 --help                 Display this help message             
 
 ----
