@@ -35,7 +35,7 @@ gocd.janitor {
   # Path to the location where we've all the pipeline directories
   artifacts-dir = "/data/go-server/artifacts/pipelines/"
 
-  # Default number of pipeline versions to keep for all the pipelines
+  # Default number of *successful* versions to keep for all the pipelines
   pipeline-versions = 5
 
   # Override the versions to keep for specific pipelines
