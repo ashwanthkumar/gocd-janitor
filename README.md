@@ -56,9 +56,6 @@ No, we will automatically pick up the new pipeline on the next run of the Janito
 ### Is there a way to run the Janitor without deleting anything? 
 Yes, you could run the janitor with `--dry-run` flag. It doesn't delete but just print the directories that will be deleted.
 
-### Does Janitor keep the run logs?
-No, Janitor doesn't keep stage run logs. If you want this feature, please raise it as an Issue or even better send a Pull Request.
-
 ### How does Janitor decide if the Pipeline run is a Failure or a Success?
 Since there is no universal way to say if the pipeline has failed or not, because a stage could fail, but we could deem it unimportant (for the time being) and continue rest of the pipeline.
 
