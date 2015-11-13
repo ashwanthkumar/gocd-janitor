@@ -26,7 +26,7 @@ public class JanitorConfiguration {
     }
 
     public static JanitorConfiguration load(Config config) {
-        config = config.getConfig("gocd.cleanup");
+        config = config.getConfig("gocd.janitor");
 
         final JanitorConfiguration janitorConfiguration = new JanitorConfiguration()
                 .setServer(config.getString("server"))

@@ -1,5 +1,8 @@
 package in.ashwanthkumar.gocd.artifacts;
 
+import in.ashwanthkumar.gocd.actions.Action;
+import in.ashwanthkumar.gocd.actions.DeleteAction;
+import in.ashwanthkumar.gocd.actions.MoveAction;
 import in.ashwanthkumar.gocd.artifacts.config.JanitorConfiguration;
 import in.ashwanthkumar.gocd.artifacts.config.PipelineConfig;
 import in.ashwanthkumar.gocd.client.MinimalisticGoClient;
@@ -17,28 +20,52 @@ import org.slf4j.LoggerFactory;
 
 import java.io.File;
 import java.io.IOException;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
 
 import static in.ashwanthkumar.utils.collections.Lists.*;
 
 public class Janitor {
     private static final Logger LOG = LoggerFactory.getLogger(Janitor.class);
+    private Action action;
 
     public static void main(String[] args) throws IOException {
         OptionParser parser = new OptionParser();
         parser.accepts("dry-run", "Doesn't delete anything just emits the files for deletion");
         parser.accepts("config", "Path to janitor configuration").withRequiredArg().required();
         parser.accepts("help", "Display this help message").forHelp();
+        parser.accepts("delete-artifacts", "Delete the artifacts");
+        parser.accepts("move-artifacts", "Move the artifacts to another location. We always move the files inside the <destination path> + current timestamp").withRequiredArg();
         OptionSet options = parser.parse(args);
         if (options.has("help")) {
             parser.printHelpOn(System.out);
             System.exit(0);
         }
+        Action action = null;
+        if (options.has("delete-artifacts") && options.has("move-artifacts")) {
+            System.err.println("I can't both move and delete artifacts. Please choose a single action");
+            parser.printHelpOn(System.out);
+            System.exit(1);
+        }
+
+        if (options.has("delete-artifacts")) {
+            action = new DeleteAction("cruise-output");
+        } else if (options.has("move-artifacts")) {
+            long timestamp = new Date().getTime();
+            action = new MoveAction(new File((String) options.valueOf("move-artifacts") + "/" + timestamp));
+        }
+
+        if (action == null) {
+            System.err.println("You need to specify one of --move-artifacts <destination> or --delete-artifacts");
+            parser.printHelpOn(System.out);
+            System.exit(1);
+        }
+
         String configPath = (String) options.valueOf("config");
-        new Janitor().run(configPath, options.has("dry-run"));
+        new Janitor(action).run(configPath, options.has("dry-run"));
+    }
+
+    public Janitor(Action action) {
+        this.action = action;
     }
 
     public void run(String pathToConfiguration, Boolean dryRun) {
@@ -93,28 +120,15 @@ public class Janitor {
                 if (whiteList.contains(pipelineDirectory.getName(), versionDir.getName())) {
                     LOG.info("Skipping since it is white listed" + versionDir.getAbsolutePath());
                 } else {
-                    deletedBytes += delete(versionDir, dryRun);
+                    deletedBytes += performAction(versionDir, dryRun);
                 }
             }
         }
         return deletedBytes;
     }
 
-    /* default */ long delete(File path, boolean dryRun) {
-        long size = FileUtils.sizeOfDirectory(path);
-        if (dryRun) {
-            LOG.info("[DRY RUN] Will delete " + path.getAbsolutePath() + ", size = " + FileUtils.byteCountToDisplaySize(size));
-        } else {
-            LOG.info("Deleting " + path.getAbsolutePath() + ", size = " + FileUtils.byteCountToDisplaySize(size));
-            try {
-                FileUtils.deleteDirectory(path);
-            } catch (IOException e) {
-                LOG.error(e.getMessage(), e);
-                throw new RuntimeException(e);
-            }
-        }
-
-        return size;
+    /* default */ long performAction(File path, boolean dryRun) {
+        return action.invoke(path, dryRun);
     }
 
     /* default */ List<Tuple2<String, List<Integer>>> mandatoryPipelineVersions(final MinimalisticGoClient client, List<PipelineConfig> pipelines) {
