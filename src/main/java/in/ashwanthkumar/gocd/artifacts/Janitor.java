@@ -51,7 +51,7 @@ public class Janitor {
             action = new DeleteAction("cruise-output");
         } else if (options.has("move-artifacts")) {
             long timestamp = new Date().getTime();
-            action = new MoveAction(new File((String) options.valueOf("move-artifacts") + "/" + timestamp));
+            action = new MoveAction(new File(options.valueOf("move-artifacts") + "/" + timestamp));
         }
 
         if (action == null) {
@@ -80,7 +80,7 @@ public class Janitor {
         final MinimalisticGoClient client = new MinimalisticGoClient(config.getServer(), config.getUsername(), config.getPassword());
 
         List<PipelineConfig> pipelinesNotInConfig = pipelinesNotInConfiguration(client, config);
-        List<Tuple2<String, List<Integer>>> requiredPipelineAndVersions = mandatoryPipelineVersions(client, concat(config.getPipelines(), pipelinesNotInConfig));
+        List<Tuple2<String, Set<Integer>>> requiredPipelineAndVersions = mandatoryPipelineVersions(client, concat(config.getPipelines(), pipelinesNotInConfig));
         WhiteList whiteList = computeWhiteList(client, requiredPipelineAndVersions);
 
         LOG.info("Number of white listed pipeline instances - " + whiteList.size());
@@ -88,9 +88,9 @@ public class Janitor {
             LOG.debug("[WhiteList] - " + pipelineDependency);
         }
 
-        long deletedBytes = doDeletes(whiteList, config.getArtifactStorage(), dryRun);
+        long bytesProcessed = performAction(whiteList, config.getArtifactStorage(), dryRun);
 
-        LOG.info("Total bytes deleted so far - " + FileUtils.byteCountToDisplaySize(deletedBytes));
+        LOG.info("Total bytes (deleted / moved) processed so far - " + FileUtils.byteCountToDisplaySize(bytesProcessed));
         LOG.info("Shutting down Janitor");
     }
 
@@ -105,12 +105,12 @@ public class Janitor {
                 new Function<String, PipelineConfig>() {
                     @Override
                     public PipelineConfig apply(String pipelineName) {
-                        return new PipelineConfig(pipelineName, config.getPipelineVersions());
+                        return new PipelineConfig(pipelineName, config.getDefaultPipelineVersions());
                     }
                 });
     }
 
-    /* default */ long doDeletes(WhiteList whiteList, String artifactStorage, Boolean dryRun) {
+    /* default */ long performAction(WhiteList whiteList, String artifactStorage, Boolean dryRun) {
         long deletedBytes = 0;
         for (String pipeline : whiteList.pipelinesUnderRadar()) {
             LOG.info("Looking for pipeline - " + pipeline);
@@ -118,33 +118,31 @@ public class Janitor {
             File[] versionDirs = listFiles(pipelineDirectory.getAbsolutePath());
             for (File versionDir : versionDirs) {
                 if (whiteList.contains(pipelineDirectory.getName(), versionDir.getName())) {
-                    LOG.info("Skipping since it is white listed" + versionDir.getAbsolutePath());
+                    LOG.info("Skipping since it is white listed - " + versionDir.getAbsolutePath());
                 } else {
-                    deletedBytes += performAction(versionDir, dryRun);
+                    deletedBytes += action.invoke(versionDir, dryRun);
                 }
             }
         }
         return deletedBytes;
     }
 
-    /* default */ long performAction(File path, boolean dryRun) {
-        return action.invoke(path, dryRun);
-    }
-
-    /* default */ List<Tuple2<String, List<Integer>>> mandatoryPipelineVersions(final MinimalisticGoClient client, List<PipelineConfig> pipelines) {
-        return map(pipelines, new Function<PipelineConfig, Tuple2<String, List<Integer>>>() {
+    /* default */ List<Tuple2<String, Set<Integer>>> mandatoryPipelineVersions(final MinimalisticGoClient client, List<PipelineConfig> pipelines) {
+        return map(pipelines, new Function<PipelineConfig, Tuple2<String, Set<Integer>>>() {
             @Override
-            public Tuple2<String, List<Integer>> apply(PipelineConfig pipelineConfig) {
-                List<Integer> versions = new ArrayList<>();
+            public Tuple2<String, Set<Integer>> apply(PipelineConfig pipelineConfig) {
+                Set<Integer> versions = new HashSet<>();
                 int offset = 0;
-                while (versions.size() < pipelineConfig.getRunsToPersist()) {
-                    Set<Map.Entry<Integer, PipelineRunStatus>> pipelineStatuses = client.pipelineRunStatus(pipelineConfig.getName(), offset).entrySet();
+                Set<Map.Entry<Integer, PipelineRunStatus>> pipelineStatuses = client.pipelineRunStatus(pipelineConfig.getName(), offset).entrySet();
+                if (!pipelineStatuses.isEmpty()) {
+                    versions.add(max(pipelineStatuses).getKey());     // Latest run version irrespective of its status will be added to whitelist
+                    versions.add(max(pipelineStatuses).getKey() + 1); // current run of the pipeline (if any) - History endpoint doesn't expose current running pipeline info
+                }
+
+                while (versions.size() < pipelineConfig.getRunsToPersist() + 2 /* the max and max + 1 versions */) {
                     if (pipelineStatuses.isEmpty()) {
                         break;
                     }
-
-                    versions.add(head(pipelineStatuses).getKey());     // Latest run version irrespective of its status will be added to whitelist
-                    versions.add(head(pipelineStatuses).getKey() + 1); // current run of the pipeline (if any) - History endpoint doesn't expose current running pipeline info
 
                     versions.addAll(
                             take(map(filter(pipelineStatuses, new Predicate<Map.Entry<Integer, PipelineRunStatus>>() {
@@ -159,19 +157,21 @@ public class Janitor {
                                 }
                             }), pipelineConfig.getRunsToPersist())
                     );
+
                     offset += 10; // default page size is 10
+                    pipelineStatuses = client.pipelineRunStatus(pipelineConfig.getName(), offset).entrySet();
                 }
                 return new Tuple2<>(pipelineConfig.getName(), versions);
             }
         });
     }
 
-    /* default */ WhiteList computeWhiteList(final MinimalisticGoClient client, List<Tuple2<String, List<Integer>>> requiredPipelineAndVersions) {
-        return new WhiteList(flatten(map(requiredPipelineAndVersions, new Function<Tuple2<String, List<Integer>>, List<PipelineDependency>>() {
+    /* default */ WhiteList computeWhiteList(final MinimalisticGoClient client, List<Tuple2<String, Set<Integer>>> requiredPipelineAndVersions) {
+        return new WhiteList(flatten(map(requiredPipelineAndVersions, new Function<Tuple2<String, Set<Integer>>, List<PipelineDependency>>() {
             @Override
-            public List<PipelineDependency> apply(Tuple2<String, List<Integer>> tuple) {
+            public List<PipelineDependency> apply(Tuple2<String, Set<Integer>> tuple) {
                 final String pipelineName = tuple._1();
-                List<Integer> versions = tuple._2();
+                Set<Integer> versions = tuple._2();
                 return flatten(map(versions, new Function<Integer, List<PipelineDependency>>() {
                     @Override
                     public List<PipelineDependency> apply(Integer version) {
@@ -189,7 +189,7 @@ public class Janitor {
     }
 
     private <T> List<T> take(List<T> list, int k) {
-        List<T> topK = Lists.<T>Nil();
+        List<T> topK = Lists.Nil();
         for (T aList : list) {
             if (topK.size() < k) topK.add(aList);
             else break;
@@ -197,9 +197,14 @@ public class Janitor {
         return topK;
     }
 
-    private <T> T head(Set<T> set) {
-        if (!set.isEmpty()) return set.iterator().next();
-        else throw new RuntimeException("head of an empty Set");
+    private Map.Entry<Integer, PipelineRunStatus> max(Set<Map.Entry<Integer, PipelineRunStatus>> set) {
+        if (!set.isEmpty()) {
+            Map.Entry<Integer, PipelineRunStatus> largest = set.iterator().next();
+            for (Map.Entry<Integer, PipelineRunStatus> item : set) {
+                if (item.getKey() > largest.getKey()) largest = item;
+            }
+            return largest;
+        } else throw new RuntimeException("max of an empty Set");
     }
 
 }

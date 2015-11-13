@@ -37,8 +37,6 @@ public class WhiteList {
 
     public boolean contains(String pipeline, String version) {
         boolean result = isNumber(version) &&
-                // We always add the latest run version and it's increment to whitelist
-                Integer.valueOf(version) < largestVersion(pipeline) &&
                 hasItem(new PipelineDependency(pipeline, Integer.valueOf(version)));
 
         if (!result) {
@@ -52,7 +50,7 @@ public class WhiteList {
                 pipelines.get(dependency.getPipelineName()).contains(dependency);
     }
 
-    public Iterable<String> pipelinesUnderRadar() {
+    public Set<String> pipelinesUnderRadar() {
         return pipelines.keySet();
     }
 
@@ -66,15 +64,6 @@ public class WhiteList {
 
         Collections.sort(versions);
         return versions;
-    }
-
-    int largestVersion(String pipeline) {
-        return Collections.max(map(pipelines.get(pipeline), new Function<PipelineDependency, Integer>() {
-            @Override
-            public Integer apply(PipelineDependency dependency) {
-                return dependency.getVersion();
-            }
-        }));
     }
 
     boolean isNumber(String value) {

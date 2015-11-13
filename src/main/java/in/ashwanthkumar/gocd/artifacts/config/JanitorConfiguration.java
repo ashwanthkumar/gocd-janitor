@@ -3,7 +3,6 @@ package in.ashwanthkumar.gocd.artifacts.config;
 import com.typesafe.config.Config;
 import com.typesafe.config.ConfigFactory;
 import in.ashwanthkumar.utils.collections.Lists;
-import in.ashwanthkumar.utils.collections.Sets;
 import in.ashwanthkumar.utils.func.Function;
 
 import java.io.File;
@@ -17,7 +16,7 @@ public class JanitorConfiguration {
     private String username;
     private String password;
     private String artifactStorage;
-    private Integer pipelineVersions;
+    private Integer defaultPipelineVersions;
     private List<PipelineConfig> pipelines;
     private Set<String> pipelineNames;
 
@@ -33,12 +32,12 @@ public class JanitorConfiguration {
                 .setArtifactStorage(config.getString("artifacts-dir"))
                 .setUsername(config.getString("username"))
                 .setPassword(config.getString("password"))
-                .setPipelineVersions(config.getInt("pipeline-versions"));
+                .setDefaultPipelineVersions(config.getInt("pipeline-versions"));
 
         List<PipelineConfig> pipelines = Lists.map((List<Config>) config.getConfigList("pipelines"), new Function<Config, PipelineConfig>() {
             @Override
             public PipelineConfig apply(Config config) {
-                return PipelineConfig.fromConfig(janitorConfiguration.getPipelineVersions(),config);
+                return PipelineConfig.fromConfig(janitorConfiguration.getDefaultPipelineVersions(),config);
             }
         });
 
@@ -91,12 +90,12 @@ public class JanitorConfiguration {
         return this;
     }
 
-    public Integer getPipelineVersions() {
-        return pipelineVersions;
+    public Integer getDefaultPipelineVersions() {
+        return defaultPipelineVersions;
     }
 
-    public JanitorConfiguration setPipelineVersions(Integer pipelineVersions) {
-        this.pipelineVersions = pipelineVersions;
+    public JanitorConfiguration setDefaultPipelineVersions(Integer defaultPipelineVersions) {
+        this.defaultPipelineVersions = defaultPipelineVersions;
         return this;
     }
 
