@@ -22,7 +22,7 @@ Option (* = required)  Description
 
 ----
 
-$ java -cp target/gocd-cleanup-artifacts-0.0.1-jar-with-dependencies.jar in.ashwanthkumar.gocd.artifacts.Janitor --conf gocd-purge.conf --dry-run
+$ java -cp target/gocd-cleanup-artifacts-0.0.1-jar-with-dependencies.jar in.ashwanthkumar.gocd.artifacts.Janitor --conf gocd-purge.conf --dry-run --delete-artifacts
 ```
 
 ## Configuration
@@ -38,9 +38,9 @@ gocd.janitor {
   # Default number of pipeline versions to keep for all the pipelines
   pipeline-versions = 5
 
+  # Override the versions to keep for specific pipelines
   pipelines = [{
     name = "Pipeline1"
-    # Number of successful runs of this pipeline and all it's upstream dependencies you want to keep
     runs = 2
   }]
 }
