@@ -27,14 +27,16 @@ public class DeleteAction implements Action {
     }
 
     @Override
-    public long invoke(File path, boolean dryRun) {
-        long size = FileUtils.sizeOfDirectory(path);
+    public long invoke(File pipelineDir, String version, boolean dryRun) {
+        File versionDir = new File(pipelineDir.getAbsolutePath() + "/" + version);
+        long size = FileUtils.sizeOfDirectory(versionDir);
+
         if (dryRun) {
-            LOG.info("[DRY RUN] Will remove " + path.getAbsolutePath() + ", size = " + FileUtils.byteCountToDisplaySize(size));
+            LOG.info("[DRY RUN] Will remove " + versionDir.getAbsolutePath() + ", size = " + FileUtils.byteCountToDisplaySize(size));
         } else {
-            LOG.info("Deleting " + path.getAbsolutePath() + ", size = " + FileUtils.byteCountToDisplaySize(size));
+            LOG.info("Deleting " + versionDir.getAbsolutePath() + ", size = " + FileUtils.byteCountToDisplaySize(size));
             try {
-                deleteDirectory(path);
+                deleteDirectory(versionDir);
             } catch (IOException e) {
                 LOG.error(e.getMessage(), e);
                 throw new RuntimeException(e);

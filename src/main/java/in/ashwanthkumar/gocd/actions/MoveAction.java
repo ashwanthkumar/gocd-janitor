@@ -17,19 +17,26 @@ public class MoveAction implements Action {
     }
 
     @Override
-    public long invoke(File path, boolean dryRun) {
-        long size = FileUtils.sizeOfDirectory(path);
+    public long invoke(File pipelineDir, String version, boolean dryRun) {
+        File versionDir = new File(pipelineDir.getAbsolutePath() + "/" + version);
+        long size = FileUtils.sizeOfDirectory(versionDir);
         try {
             if (dryRun) {
-                LOG.info("[DRY RUN] Will move " + path.getAbsolutePath() + " to " + destination.getAbsolutePath() + ", size = " + FileUtils.byteCountToDisplaySize(size));
+                LOG.info("[DRY RUN] Will move " + pipelineDir.getAbsolutePath() + " to " + destination.getAbsolutePath() + ", size = " + FileUtils.byteCountToDisplaySize(size));
             } else {
-                LOG.info("Moving the directory from " + path.getAbsolutePath() + " to " + destination.getAbsolutePath());
-                FileUtils.moveDirectory(path, destination);
+                LOG.info("Moving the directory from " + versionDir.getAbsolutePath() + " to " + destinationPath(pipelineDir));
+                File destination = new File(destinationPath(pipelineDir));
+                destination.mkdirs();
+                FileUtils.moveDirectory(versionDir, new File(destination.getAbsolutePath() + "/" + version));
             }
         } catch (IOException e) {
             LOG.error(e.getMessage(), e);
             throw new RuntimeException(e);
         }
         return size;
+    }
+
+    private String destinationPath(File pipelineDir) {
+        return destination.getAbsolutePath() + "/" + pipelineDir.getName();
     }
 }

@@ -8,9 +8,9 @@ import java.io.File;
  */
 public interface Action {
     /**
-     * @param path   Path to the version directory of the pipeline
+     * @param pipelinePath   Path to pipelineDir
      * @param dryRun Should we just emulate this action?
      * @return The size of the directory that was processed.
      */
-    long invoke(File path, boolean dryRun);
+    long invoke(File pipelinePath, String versionPath, boolean dryRun);
 }

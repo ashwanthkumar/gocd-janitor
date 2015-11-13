@@ -120,7 +120,7 @@ public class Janitor {
                 if (whiteList.contains(pipelineDirectory.getName(), versionDir.getName())) {
                     LOG.info("Skipping since it is white listed - " + versionDir.getAbsolutePath());
                 } else {
-                    deletedBytes += action.invoke(versionDir, dryRun);
+                    deletedBytes += action.invoke(pipelineDirectory, versionDir.getName(), dryRun);
                 }
             }
         }
