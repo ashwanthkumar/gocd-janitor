@@ -183,7 +183,7 @@ public class Janitor {
 
     private File[] listFiles(String path) {
         File[] files = new File(path).listFiles();
-        if (files == null) return null; 
+        if (files == null) return File; 
         else return files;
     }
 
