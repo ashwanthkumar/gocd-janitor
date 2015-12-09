@@ -183,7 +183,10 @@ public class Janitor {
 
     private File[] listFiles(String path) {
         File[] files = new File(path).listFiles();
-        if (files == null) throw new RuntimeException(path + " did not yield any pipeline run directories");
+        if (files == null) {
+            LOG.debug("Moving On - There are no files under " + path);
+            return new File[0];
+        }
         else return files;
     }
 
