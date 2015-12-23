@@ -50,6 +50,9 @@ gocd.janitor {
 ### Where do I run the Janitor from?
 It is expected to be run on the go server machine where the artifacts are stored. If you run agents on the server, then you create a pipeline and assign it to an agent on the server machine.
 
+### Is Janitor a GoCD Plugin? 
+No this is not a plugin and you can't use it as a plugin either.
+
 ### Do I need to add every new pipeline being created to the config? 
 No, we will automatically pick up the new pipeline on the next run of the Janitor.
 
