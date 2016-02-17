@@ -19,6 +19,7 @@ public class JanitorConfiguration {
     private Integer defaultPipelineVersions;
     private List<PipelineConfig> pipelines;
     private Set<String> pipelineNames;
+    private String pipelinePrefix;
 
     public static JanitorConfiguration load(String file) {
         return load(ConfigFactory.parseFile(new File(file)));
@@ -32,7 +33,8 @@ public class JanitorConfiguration {
                 .setArtifactStorage(config.getString("artifacts-dir"))
                 .setUsername(config.getString("username"))
                 .setPassword(config.getString("password"))
-                .setDefaultPipelineVersions(config.getInt("pipeline-versions"));
+                .setDefaultPipelineVersions(config.getInt("pipeline-versions"))
+                .setPipelinePrefix(config.getString("pipeline-prefix"));
 
         List<PipelineConfig> pipelines = Lists.map((List<Config>) config.getConfigList("pipelines"), new Function<Config, PipelineConfig>() {
             @Override
@@ -99,6 +101,11 @@ public class JanitorConfiguration {
         return this;
     }
 
+    public JanitorConfiguration setPipelinePrefix(String pipelinePrefix){
+        this.pipelinePrefix = pipelinePrefix;
+        return this;
+    }
+
     public boolean hasPipeline(String pipeline) {
         return pipelineNames.contains(pipeline);
     }
@@ -127,5 +134,8 @@ public class JanitorConfiguration {
                 return pipelineConfig.getName();
             }
         }));
+    }
+    public String getPipelinePrefix() {
+        return pipelinePrefix;
     }
 }

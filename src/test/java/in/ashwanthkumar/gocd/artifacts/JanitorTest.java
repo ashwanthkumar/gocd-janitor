@@ -10,6 +10,7 @@ import in.ashwanthkumar.utils.collections.Lists;
 import in.ashwanthkumar.utils.collections.Maps;
 import in.ashwanthkumar.utils.collections.Sets;
 import in.ashwanthkumar.utils.lang.tuple.Tuple2;
+import org.junit.Ignore;
 import org.junit.Test;
 
 import java.util.List;
@@ -35,9 +36,10 @@ public class JanitorTest {
                         new PipelineConfig("pipeline2", 5),
                         new PipelineConfig("pipeline3", 5)
                 )
-        ).setDefaultPipelineVersions(10);
+        ).setDefaultPipelineVersions(10)
+                .setPipelinePrefix("");
 
-        when(client.allPipelineNames()).thenReturn(
+        when(client.allPipelineNames("")).thenReturn(
                 Lists.of("pipeline1", "pipeline2", "pipeline3", "pipeline4")
         );
         List<PipelineConfig> pipelines = janitor.pipelinesNotInConfiguration(client, config);
