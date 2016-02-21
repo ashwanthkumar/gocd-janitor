@@ -6,6 +6,8 @@ import com.mashape.unirest.http.exceptions.UnirestException;
 import com.mashape.unirest.request.GetRequest;
 import in.ashwanthkumar.utils.collections.Lists;
 import in.ashwanthkumar.utils.func.Function;
+import in.ashwanthkumar.utils.func.Predicate;
+import in.ashwanthkumar.utils.lang.StringUtils;
 import org.json.JSONArray;
 import org.json.JSONObject;
 import org.jsoup.Jsoup;
@@ -19,6 +21,7 @@ import java.net.MalformedURLException;
 import java.net.URI;
 import java.util.*;
 
+import static in.ashwanthkumar.utils.collections.Lists.filter;
 import static in.ashwanthkumar.utils.collections.Lists.map;
 
 public class MinimalisticGoClient {
@@ -37,18 +40,28 @@ public class MinimalisticGoClient {
         this.password = password;
     }
 
-    public List<String> allPipelineNames() {
+    public List<String> allPipelineNames(final String pipelinePrefix) {
         String xml = getXML("/go/api/pipelines.xml");
         Document doc = Jsoup.parse(xml);
         Elements pipelineElements = doc.select("pipeline[href]");
-        return map(pipelineElements, new Function<Element, String>() {
+        List<String> pipelines = filter(map(pipelineElements, new Function<Element, String>() {
             @Override
             public String apply(Element element) {
                 String href = element.attr("href");
                 String apiPrefix = "/go/api/pipelines/";
                 return href.substring(href.indexOf(apiPrefix) + apiPrefix.length(), href.indexOf("/stages.xml"));
             }
+        }),new Predicate<String>(){
+            @Override
+            public Boolean apply(String s) {
+                if(StringUtils.isEmpty(pipelinePrefix)){
+                    return true;
+                }
+                return s.startsWith(pipelinePrefix);
+            }
         });
+
+        return pipelines;
     }
 
     public List<PipelineDependency> upstreamDependencies(String pipeline, int version) {

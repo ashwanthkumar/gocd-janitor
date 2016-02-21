@@ -95,7 +95,7 @@ public class Janitor {
 
     /* default */ List<PipelineConfig> pipelinesNotInConfiguration(MinimalisticGoClient client, final JanitorConfiguration config) {
         return map(
-                filter(client.allPipelineNames(), new Predicate<String>() {
+                filter(client.allPipelineNames(config.getPipelinePrefix()), new Predicate<String>() {
                     @Override
                     public Boolean apply(String pipeline) {
                         return !config.hasPipeline(pipeline);

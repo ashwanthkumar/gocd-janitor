@@ -55,7 +55,7 @@ public class MinimalisticGoClientTest {
     public void shouldParseAllPipelineNames() throws IOException {
         MinimalisticGoClient client = new MinimalisticGoClient("http://server", "foo", "bar");
         client.setMockResponse(TestUtils.readFile("/responses/pipelines.xml"));
-        List<String> pipelines = client.allPipelineNames();
+        List<String> pipelines = client.allPipelineNames("");
         assertThat(pipelines.size(), is(17));
         assertThat(pipelines, hasItem("create-maven-release"));
         assertThat(pipelines, hasItem("build-linux"));
@@ -73,6 +73,17 @@ public class MinimalisticGoClientTest {
         assertThat(pipelines, hasItem("smoke"));
         assertThat(pipelines, hasItem("acceptance"));
         assertThat(pipelines, hasItem("create-maven-release-PR"));
+        assertThat(pipelines, hasItem("build-linux-PR"));
+    }
+
+    @Test
+    public void shouldParsePipelineNamesWithSpecifiedPrefix() throws IOException {
+        MinimalisticGoClient client = new MinimalisticGoClient("http://server", "foo", "bar");
+        client.setMockResponse(TestUtils.readFile("/responses/pipelines.xml"));
+        List<String> pipelines = client.allPipelineNames("build");
+        assertThat(pipelines.size(), is(3));
+        assertThat(pipelines, hasItem("build-linux"));
+        assertThat(pipelines, hasItem("build-windows"));
         assertThat(pipelines, hasItem("build-linux-PR"));
     }
 

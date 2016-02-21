@@ -16,6 +16,7 @@ public class JanitorConfigurationTest {
         assertThat(configuration.getUsername(), is("foo"));
         assertThat(configuration.getPassword(), is("bar"));
         assertThat(configuration.getDefaultPipelineVersions(), is(5));
+        assertThat(configuration.getPipelinePrefix(), is("pipeline-prefix-value"));
 
         PipelineConfig expected1 = new PipelineConfig("Pipeline1", 2);
         assertThat(configuration.getPipelines(), hasItem(expected1));
