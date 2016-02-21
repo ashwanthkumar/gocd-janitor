@@ -2,6 +2,7 @@ package in.ashwanthkumar.gocd.artifacts.config;
 
 import com.typesafe.config.Config;
 import com.typesafe.config.ConfigFactory;
+import in.ashwanthkumar.gocd.hocon.HoconUtils;
 import in.ashwanthkumar.utils.collections.Lists;
 import in.ashwanthkumar.utils.func.Function;
 
@@ -34,12 +35,12 @@ public class JanitorConfiguration {
                 .setUsername(config.getString("username"))
                 .setPassword(config.getString("password"))
                 .setDefaultPipelineVersions(config.getInt("pipeline-versions"))
-                .setPipelinePrefix(config.getString("pipeline-prefix"));
+                .setPipelinePrefix(HoconUtils.getString(config, "pipeline-prefix", ""));
 
         List<PipelineConfig> pipelines = Lists.map((List<Config>) config.getConfigList("pipelines"), new Function<Config, PipelineConfig>() {
             @Override
             public PipelineConfig apply(Config config) {
-                return PipelineConfig.fromConfig(janitorConfiguration.getDefaultPipelineVersions(),config);
+                return PipelineConfig.fromConfig(janitorConfiguration.getDefaultPipelineVersions(), config);
             }
         });
 
@@ -101,7 +102,7 @@ public class JanitorConfiguration {
         return this;
     }
 
-    public JanitorConfiguration setPipelinePrefix(String pipelinePrefix){
+    public JanitorConfiguration setPipelinePrefix(String pipelinePrefix) {
         this.pipelinePrefix = pipelinePrefix;
         return this;
     }
@@ -128,13 +129,14 @@ public class JanitorConfiguration {
     }
 
     void setPipelineNames() {
-        this.pipelineNames =  new HashSet<>(Lists.map(pipelines, new Function<PipelineConfig, String>() {
+        this.pipelineNames = new HashSet<>(Lists.map(pipelines, new Function<PipelineConfig, String>() {
             @Override
             public String apply(PipelineConfig pipelineConfig) {
                 return pipelineConfig.getName();
             }
         }));
     }
+
     public String getPipelinePrefix() {
         return pipelinePrefix;
     }
