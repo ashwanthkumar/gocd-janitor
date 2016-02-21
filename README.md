@@ -38,6 +38,9 @@ gocd.janitor {
   # Default number of *successful* versions to keep for all the pipelines
   pipeline-versions = 5
 
+  # (Optional) Global prefix while selecting the pipelines (default - "")
+  pipeline-prefix = "pipeline-prefix"
+
   # Override the versions to keep for specific pipelines
   pipelines = [{
     name = "Pipeline1"
