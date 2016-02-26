@@ -10,7 +10,7 @@ Tiny program that helps you with cleaning up artifacts on GoCD servers. There wa
 ## Usage
 ```
 $ mvn clean package
-$ java -cp target/gocd-janitor-0.0.1-jar-with-dependencies.jar in.ashwanthkumar.gocd.artifacts.Janitor --help
+$ java -cp target/gocd-janitor-0.2.0-jar-with-dependencies.jar in.ashwanthkumar.gocd.artifacts.Janitor --help
 Option (* = required)  Description                           
 ---------------------  -----------                           
 * --config             Path to janitor configuration         
@@ -22,7 +22,7 @@ Option (* = required)  Description
 
 ----
 
-$ java -cp target/gocd-janitor-0.0.1-jar-with-dependencies.jar in.ashwanthkumar.gocd.artifacts.Janitor --conf gocd-purge.conf --dry-run --delete-artifacts
+$ java -cp target/gocd-janitor-0.2.0-jar-with-dependencies.jar in.ashwanthkumar.gocd.artifacts.Janitor --conf gocd-purge.conf --dry-run --delete-artifacts
 ```
 
 ## Configuration
@@ -31,7 +31,7 @@ gocd.janitor {
   server = "http://ci-server:8080"
   username = "admin"
   password = "badget"
-  
+
   # Path to the location where we've all the pipeline directories
   artifacts-dir = "/data/go-server/artifacts/pipelines/"
 
@@ -42,6 +42,7 @@ gocd.janitor {
   pipeline-prefix = "pipeline-prefix"
 
   # Override the versions to keep for specific pipelines
+  # To leave this key blank, specify it like: pipelines = []
   pipelines = [{
     name = "Pipeline1"
     runs = 2
@@ -53,13 +54,13 @@ gocd.janitor {
 ### Where do I run the Janitor from?
 It is expected to be run on the go server machine where the artifacts are stored. If you run agents on the server, then you create a pipeline and assign it to an agent on the server machine.
 
-### Is Janitor a GoCD Plugin? 
+### Is Janitor a GoCD Plugin?
 No this is not a plugin and you can't use it as a plugin either.
 
-### Do I need to add every new pipeline being created to the config? 
+### Do I need to add every new pipeline being created to the config?
 No, we will automatically pick up the new pipeline on the next run of the Janitor.
 
-### Is there a way to run the Janitor without deleting anything? 
+### Is there a way to run the Janitor without deleting anything?
 Yes, you could run the janitor with `--dry-run` flag. It doesn't delete but just print the directories that will be deleted.
 
 ### How does Janitor decide if the Pipeline run is a Failure or a Success?
@@ -70,7 +71,7 @@ Janitor is sensitive about what it considers as failures. The conditions are as 
 1. Any 1 stage failure is considered a pipeline failure.
 2. If the pipeline doesn't run to completion (because of it being paused or locked) it is considered a failure.
 
-### Does Janitor respect the "Never Cleanup Artifacts" option of the pipeline? 
+### Does Janitor respect the "Never Cleanup Artifacts" option of the pipeline?
 No. That's inside the GoCD's configuration and we don't have a way to syncing it yet. If you want this feature, please raise it as an Issue or even better send a Pull Request :smile:
 
 ## License
