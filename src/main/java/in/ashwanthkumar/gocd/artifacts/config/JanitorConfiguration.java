@@ -27,6 +27,9 @@ public class JanitorConfiguration {
     }
 
     public static JanitorConfiguration load(Config config) {
+        Config envThenSystem = ConfigFactory.systemEnvironment().withFallback(ConfigFactory.systemProperties());
+        config = config.resolveWith(envThenSystem);
+
         config = config.getConfig("gocd.janitor");
 
         final JanitorConfiguration janitorConfiguration = new JanitorConfiguration()
