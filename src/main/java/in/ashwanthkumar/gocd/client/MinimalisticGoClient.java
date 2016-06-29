@@ -25,6 +25,12 @@ import static in.ashwanthkumar.utils.collections.Lists.filter;
 import static in.ashwanthkumar.utils.collections.Lists.map;
 
 public class MinimalisticGoClient {
+
+    static {
+        // Having a large timeout (10 min) because sometimes a pipeline VSM could be very very large
+        Unirest.setTimeouts(600 * 1000L, 600 * 1000L);
+    }
+
     private static Logger LOG = LoggerFactory.getLogger(MinimalisticGoClient.class);
 
     private String server;
@@ -176,8 +182,6 @@ public class MinimalisticGoClient {
     private GetRequest invokeGET(String resource) throws UnirestException {
         String url = buildUrl(resource);
         LOG.debug("Hitting " + url);
-        // Having a large timeout (10 min) because sometimes a pipeline VSM could be very very large
-        Unirest.setTimeouts(600 * 1000L, 600 * 1000L);
         return Unirest.get(url)
                 .basicAuth(username, password);
     }
