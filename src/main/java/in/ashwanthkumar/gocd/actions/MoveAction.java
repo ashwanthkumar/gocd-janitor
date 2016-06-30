@@ -19,15 +19,64 @@ public class MoveAction implements Action {
     @Override
     public long invoke(File pipelineDir, String version, boolean dryRun) {
         File versionDir = new File(pipelineDir.getAbsolutePath() + "/" + version);
-        long size = FileUtils.sizeOfDirectory(versionDir);
+        long size;
         try {
             if (dryRun) {
+                size = FileUtils.sizeOfDirectory(versionDir);
                 LOG.info("[DRY RUN] Will move " + pipelineDir.getAbsolutePath() + " to " + destination.getAbsolutePath() + ", size = " + FileUtils.byteCountToDisplaySize(size));
             } else {
+                size = 0l;
                 LOG.info("Moving the directory from " + versionDir.getAbsolutePath() + " to " + destinationPath(pipelineDir));
-                File destination = new File(destinationPath(pipelineDir));
-                destination.mkdirs();
-                FileUtils.moveDirectory(versionDir, new File(destination.getAbsolutePath() + "/" + version));
+                File baseDestination = new File(destinationPath(pipelineDir) + "/" + version);
+                baseDestination.mkdirs();
+                File[] stages = versionDir.listFiles();
+                if (stages == null) {
+                    LOG.warn("[Move Action] {} doesn't seem to have any stage dirs", versionDir.getAbsolutePath());
+                    return 0;
+                }
+                /*
+                    Folder structure of the artifacts are
+                        <Pipeline-Name>/<Pipeline-Run>/<Stage-Name>/<Stage-Run-Counter>/...
+
+                    /data/go-server/artifacts/pipelines/gocd-janitor
+                    ├── 1
+                    │   └── cleanup
+                    │       └── 1
+                    │           └── cleanup
+                    │               └── cruise-output
+                    │                   └── console.log
+                    ├── 2
+                    │   └── cleanup
+                    │       ├── 1
+                    │       │   └── cleanup
+                    │       │       └── cruise-output
+                    │       │           └── console.log
+                    │       └── 2
+                    │           └── cleanup
+                    │               └── cruise-output
+                    │                   └── console.log
+                    └── 3
+                        └── cleanup
+                            └── 1
+                                └── cleanup
+                                    └── cruise-output
+                                        └── console.log
+
+                    7 directories, 4 files
+                 */
+                for (File stageDir : stages) {
+                    File[] runs = stageDir.listFiles();
+                    if (runs == null) {
+                        LOG.warn("[Move Action] {} doesn't seem to have any stage run dirs", stageDir.getAbsolutePath());
+                    } else {
+                        for (File runDir : runs) {
+                            size += FileUtils.sizeOf(runDir);
+                            FileUtils.moveDirectory(runDir, new File(baseDestination.getAbsolutePath() + "/" + stageDir.getName() + "/" + runDir.getName()));
+                        }
+                    }
+                    FileUtils.deleteDirectory(stageDir);
+                }
+                FileUtils.deleteDirectory(versionDir);
             }
         } catch (IOException e) {
             LOG.error(e.getMessage(), e);

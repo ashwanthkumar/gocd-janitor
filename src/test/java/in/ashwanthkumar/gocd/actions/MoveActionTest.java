@@ -63,6 +63,37 @@ public class MoveActionTest {
         assertThat(new File(pipelineDir.toFile().getAbsolutePath() + "/" + "1").exists(), is(false));
     }
 
+    @Test
+    public void shouldMoveProperlyEvenWhenTheStageWasReRan() throws IOException {
+        // Run #1
+        Path pipelineDir = Files.createTempDirectory("pipeline-name");
+        String pipelineName = pipelineDir.toFile().getName();
+        createFile(pipelineDir, "1", "stage-1", "1", "cruise-output", "console.log");
+
+        Path destinationDirectory = Files.createTempDirectory("destination");
+        FileUtils.deleteDirectory(destinationDirectory.toFile());
+
+        MoveAction action = new MoveAction(destinationDirectory.toFile());
+        long size = action.invoke(pipelineDir.toFile(), "1", false);
+        assertThat(size, is(0l));
+
+        assertThat(pipelineDir.toFile().exists(), is(true));
+        assertThat(path(pipelineDir.toFile(), "1").exists(), is(false));
+        assertThat(destinationDirectory.toFile().exists(), is(true));
+        assertThat(path(destinationDirectory.toFile(), pipelineName, "1", "stage-1", "1", "cruise-output", "console.log").exists(), is(true));
+
+        // Run #2
+        createFile(pipelineDir, "1", "stage-1", "2", "cruise-output", "console.log");
+        size = action.invoke(pipelineDir.toFile(), "1", false);
+        assertThat(size, is(0l));
+        assertThat(pipelineDir.toFile().exists(), is(true));
+        assertThat(path(pipelineDir.toFile(), "2").exists(), is(false));
+        assertThat(destinationDirectory.toFile().exists(), is(true));
+        assertThat(path(destinationDirectory.toFile(), pipelineName, "1", "stage-1", "1", "cruise-output", "console.log").exists(), is(true));
+        assertThat(path(destinationDirectory.toFile(), pipelineName, "1", "stage-1", "2", "cruise-output", "console.log").exists(), is(true));
+    }
+
+
     public File path(File path, String... suffixes) {
         StringBuilder builder = new StringBuilder();
         for (String suffix : suffixes) {
