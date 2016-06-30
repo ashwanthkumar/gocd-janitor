@@ -1,6 +1,8 @@
 package in.ashwanthkumar.gocd.actions;
 
 import org.apache.commons.io.FileUtils;
+import org.junit.After;
+import org.junit.Before;
 import org.junit.Test;
 
 import java.io.File;
@@ -13,9 +15,25 @@ import static org.hamcrest.CoreMatchers.is;
 import static org.junit.Assert.assertThat;
 
 public class MoveActionTest {
+
+    private Path pipelineDir;
+    private Path destinationDirectory;
+
+    @Before
+    public void before() throws IOException {
+        pipelineDir = Files.createTempDirectory("source");
+        destinationDirectory = Files.createTempDirectory("destination");
+        FileUtils.deleteDirectory(destinationDirectory.toFile()); // we create dirs inside the MoveAction
+    }
+
+    @After
+    public void after() throws IOException {
+        FileUtils.deleteDirectory(destinationDirectory.toFile());
+        FileUtils.deleteDirectory(pipelineDir.toFile());
+    }
+
     @Test
     public void shouldMoveDirectFromSourceToDestination() throws IOException {
-        Path pipelineDir = Files.createTempDirectory("source");
         String pipelineName = pipelineDir.toFile().getName();
         createFile(pipelineDir, "1", "stage-1", "cruise-output", "console.log");
         createFile(pipelineDir, "1", "stage-1", "blah", "blah");
@@ -23,9 +41,6 @@ public class MoveActionTest {
         createFile(pipelineDir, "1", "stage-2", "foo", "bar");
         createFile(pipelineDir, "1", "stage-3", "cruise-output", "console.log");
         createFile(pipelineDir, "1", "stage-3", "bar", "baz");
-
-        Path destinationDirectory = Files.createTempDirectory("destination");
-        FileUtils.deleteDirectory(destinationDirectory.toFile());
 
         MoveAction action = new MoveAction(destinationDirectory.toFile());
         long size = action.invoke(pipelineDir.toFile(), "1", false);
@@ -44,7 +59,6 @@ public class MoveActionTest {
 
     @Test
     public void shouldNotMoveWhenRunningOnDryMode() throws IOException {
-        Path pipelineDir = Files.createTempDirectory("source");
         createFile(pipelineDir, "1", "stage-1", "cruise-output", "console.log");
         createFile(pipelineDir, "1", "stage-1", "blah", "blah");
         createFile(pipelineDir, "1", "stage-2", "cruise-output", "console.log");
@@ -66,12 +80,8 @@ public class MoveActionTest {
     @Test
     public void shouldMoveProperlyEvenWhenTheStageWasReRan() throws IOException {
         // Run #1
-        Path pipelineDir = Files.createTempDirectory("pipeline-name");
         String pipelineName = pipelineDir.toFile().getName();
         createFile(pipelineDir, "1", "stage-1", "1", "cruise-output", "console.log");
-
-        Path destinationDirectory = Files.createTempDirectory("destination");
-        FileUtils.deleteDirectory(destinationDirectory.toFile());
 
         MoveAction action = new MoveAction(destinationDirectory.toFile());
         long size = action.invoke(pipelineDir.toFile(), "1", false);
