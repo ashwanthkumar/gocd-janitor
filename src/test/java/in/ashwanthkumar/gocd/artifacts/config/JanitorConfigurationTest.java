@@ -1,6 +1,6 @@
 package in.ashwanthkumar.gocd.artifacts.config;
 
-import in.ashwanthkumar.gocd.client.TestUtils;
+import in.ashwanthkumar.gocd.artifacts.TestUtils;
 import org.junit.Test;
 
 import java.util.UUID;

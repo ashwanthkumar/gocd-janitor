@@ -1,6 +1,6 @@
 package in.ashwanthkumar.gocd.artifacts;
 
-import in.ashwanthkumar.gocd.client.PipelineDependency;
+import in.ashwanthkumar.gocd.client.types.PipelineDependency;
 import in.ashwanthkumar.utils.collections.Lists;
 import in.ashwanthkumar.utils.func.Function;
 import org.slf4j.Logger;

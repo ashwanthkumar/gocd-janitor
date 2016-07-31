@@ -3,23 +3,24 @@ package in.ashwanthkumar.gocd.artifacts;
 import in.ashwanthkumar.gocd.actions.Action;
 import in.ashwanthkumar.gocd.artifacts.config.JanitorConfiguration;
 import in.ashwanthkumar.gocd.artifacts.config.PipelineConfig;
-import in.ashwanthkumar.gocd.client.MinimalisticGoClient;
-import in.ashwanthkumar.gocd.client.PipelineDependency;
-import in.ashwanthkumar.gocd.client.PipelineRunStatus;
+import in.ashwanthkumar.gocd.client.GoCD;
+import in.ashwanthkumar.gocd.client.types.PipelineDependency;
+import in.ashwanthkumar.gocd.client.types.PipelineRunStatus;
 import in.ashwanthkumar.utils.collections.Lists;
 import in.ashwanthkumar.utils.collections.Maps;
 import in.ashwanthkumar.utils.collections.Sets;
 import in.ashwanthkumar.utils.lang.tuple.Tuple2;
 import org.junit.Test;
 
+import java.io.IOException;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
-import static in.ashwanthkumar.gocd.client.PipelineRunStatus.FAILED;
-import static in.ashwanthkumar.gocd.client.PipelineRunStatus.PASSED;
+import static in.ashwanthkumar.gocd.client.types.PipelineRunStatus.FAILED;
+import static in.ashwanthkumar.gocd.client.types.PipelineRunStatus.PASSED;
 import static org.hamcrest.CoreMatchers.is;
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertThat;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
@@ -27,8 +28,8 @@ public class JanitorTest {
     Janitor janitor = new Janitor(mock(Action.class));
 
     @Test
-    public void shouldReturnPipelinesNotInConfiguration() {
-        MinimalisticGoClient client = mock(MinimalisticGoClient.class);
+    public void shouldReturnPipelinesNotInConfiguration() throws IOException {
+        GoCD client = mock(GoCD.class);
         JanitorConfiguration config = new JanitorConfiguration().setPipelines(
                 Lists.of(
                         new PipelineConfig("pipeline1", 5),
@@ -47,8 +48,8 @@ public class JanitorTest {
     }
 
     @Test
-    public void shouldReturnMandatoryPipelineConfigs() {
-        MinimalisticGoClient client = mock(MinimalisticGoClient.class);
+    public void shouldReturnMandatoryPipelineConfigs() throws IOException {
+        GoCD client = mock(GoCD.class);
         List<PipelineConfig> pipelines = Lists.of(
                 new PipelineConfig("pipeline1", 2),
                 new PipelineConfig("pipeline2", 3)
@@ -62,8 +63,8 @@ public class JanitorTest {
     }
 
     @Test
-    public void shouldComputeWhitelist() {
-        MinimalisticGoClient client = mock(MinimalisticGoClient.class);
+    public void shouldComputeWhitelist() throws IOException {
+        GoCD client = mock(GoCD.class);
         List<Tuple2<String, Set<Integer>>> pipelineVersions = Lists.of(
                 Tuple2.tuple2("pipeline1", Sets.of(4))
         );

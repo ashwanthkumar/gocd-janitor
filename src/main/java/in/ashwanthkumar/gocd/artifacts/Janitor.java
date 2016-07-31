@@ -5,9 +5,9 @@ import in.ashwanthkumar.gocd.actions.DeleteAction;
 import in.ashwanthkumar.gocd.actions.MoveAction;
 import in.ashwanthkumar.gocd.artifacts.config.JanitorConfiguration;
 import in.ashwanthkumar.gocd.artifacts.config.PipelineConfig;
-import in.ashwanthkumar.gocd.client.MinimalisticGoClient;
-import in.ashwanthkumar.gocd.client.PipelineDependency;
-import in.ashwanthkumar.gocd.client.PipelineRunStatus;
+import in.ashwanthkumar.gocd.client.GoCD;
+import in.ashwanthkumar.gocd.client.types.PipelineDependency;
+import in.ashwanthkumar.gocd.client.types.PipelineRunStatus;
 import in.ashwanthkumar.utils.collections.Lists;
 import in.ashwanthkumar.utils.func.Function;
 import in.ashwanthkumar.utils.func.Predicate;
@@ -20,7 +20,10 @@ import org.slf4j.LoggerFactory;
 
 import java.io.File;
 import java.io.IOException;
-import java.util.*;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
 
 import static in.ashwanthkumar.utils.collections.Lists.*;
 
@@ -67,7 +70,7 @@ public class Janitor {
         this.action = action;
     }
 
-    public void run(String pathToConfiguration, Boolean dryRun) {
+    public void run(String pathToConfiguration, Boolean dryRun) throws IOException {
         final JanitorConfiguration config = JanitorConfiguration.load(pathToConfiguration);
         LOG.info("Starting Janitor");
         LOG.info("Go Server - " + config.getServer());
@@ -76,7 +79,7 @@ public class Janitor {
             LOG.info("Working in Dry run mode, we will not delete anything in this run.");
         }
 
-        final MinimalisticGoClient client = new MinimalisticGoClient(config.getServer(), config.getUsername(), config.getPassword());
+        final GoCD client = new GoCD(config.getServer(), config.getUsername(), config.getPassword());
 
         List<PipelineConfig> pipelinesNotInConfig = pipelinesNotInConfiguration(client, config);
         List<Tuple2<String, Set<Integer>>> requiredPipelineAndVersions = mandatoryPipelineVersions(client, concat(config.getPipelines(), pipelinesNotInConfig));
@@ -93,7 +96,7 @@ public class Janitor {
         LOG.info("Shutting down Janitor");
     }
 
-    /* default */ List<PipelineConfig> pipelinesNotInConfiguration(MinimalisticGoClient client, final JanitorConfiguration config) {
+    /* default */ List<PipelineConfig> pipelinesNotInConfiguration(GoCD client, final JanitorConfiguration config) throws IOException {
         return map(
                 filter(client.allPipelineNames(config.getPipelinePrefix()), new Predicate<String>() {
                     @Override
@@ -126,13 +129,18 @@ public class Janitor {
         return deletedBytes;
     }
 
-    /* default */ List<Tuple2<String, Set<Integer>>> mandatoryPipelineVersions(final MinimalisticGoClient client, List<PipelineConfig> pipelines) {
+    /* default */ List<Tuple2<String, Set<Integer>>> mandatoryPipelineVersions(final GoCD client, List<PipelineConfig> pipelines) {
         return map(pipelines, new Function<PipelineConfig, Tuple2<String, Set<Integer>>>() {
             @Override
             public Tuple2<String, Set<Integer>> apply(PipelineConfig pipelineConfig) {
                 Set<Integer> versions = new HashSet<>();
                 int offset = 0;
-                Set<Map.Entry<Integer, PipelineRunStatus>> pipelineStatuses = client.pipelineRunStatus(pipelineConfig.getName(), offset).entrySet();
+                Set<Map.Entry<Integer, PipelineRunStatus>> pipelineStatuses = null;
+                try {
+                    pipelineStatuses = client.pipelineRunStatus(pipelineConfig.getName(), offset).entrySet();
+                } catch (IOException e) {
+                    throw new RuntimeException(e);
+                }
                 if (!pipelineStatuses.isEmpty()) {
                     versions.add(max(pipelineStatuses).getKey());     // Latest run version irrespective of its status will be added to whitelist
                     versions.add(max(pipelineStatuses).getKey() + 1); // current run of the pipeline (if any) - History endpoint doesn't expose current running pipeline info
@@ -158,14 +166,18 @@ public class Janitor {
                     );
 
                     offset += 10; // default page size is 10
-                    pipelineStatuses = client.pipelineRunStatus(pipelineConfig.getName(), offset).entrySet();
+                    try {
+                        pipelineStatuses = client.pipelineRunStatus(pipelineConfig.getName(), offset).entrySet();
+                    } catch (IOException e) {
+                        throw new RuntimeException(e);
+                    }
                 }
                 return new Tuple2<>(pipelineConfig.getName(), versions);
             }
         });
     }
 
-    /* default */ WhiteList computeWhiteList(final MinimalisticGoClient client, List<Tuple2<String, Set<Integer>>> requiredPipelineAndVersions) {
+    /* default */ WhiteList computeWhiteList(final GoCD client, List<Tuple2<String, Set<Integer>>> requiredPipelineAndVersions) {
         return new WhiteList(flatten(map(requiredPipelineAndVersions, new Function<Tuple2<String, Set<Integer>>, List<PipelineDependency>>() {
             @Override
             public List<PipelineDependency> apply(Tuple2<String, Set<Integer>> tuple) {
@@ -174,7 +186,11 @@ public class Janitor {
                 return flatten(map(versions, new Function<Integer, List<PipelineDependency>>() {
                     @Override
                     public List<PipelineDependency> apply(Integer version) {
-                        return client.upstreamDependencies(pipelineName, version);
+                        try {
+                            return client.upstreamDependencies(pipelineName, version);
+                        } catch (IOException e) {
+                            throw new RuntimeException(e);
+                        }
                     }
                 }));
             }

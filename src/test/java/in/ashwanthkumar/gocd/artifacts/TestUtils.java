@@ -1,6 +1,5 @@
-package in.ashwanthkumar.gocd.client;
+package in.ashwanthkumar.gocd.artifacts;
 
-import com.mashape.unirest.http.JsonNode;
 import in.ashwanthkumar.utils.io.IO;
 
 import java.io.IOException;
