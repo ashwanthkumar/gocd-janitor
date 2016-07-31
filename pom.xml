@@ -29,7 +29,7 @@
         <dependency>
             <groupId>in.ashwanthkumar</groupId>
             <artifactId>gocd-java-client</artifactId>
-            <version>0.0.2</version>
+            <version>0.0.3</version>
         </dependency>
 
         <dependency>
@@ -67,8 +67,12 @@
 
     <repositories>
         <repository>
-            <id>ossrh</id>
+            <id>ossrh-snapshots</id>
             <url>https://oss.sonatype.org/content/repositories/snapshots</url>
+        </repository>
+        <repository>
+            <id>ossrh</id>
+            <url>https://oss.sonatype.org/content/repositories/releases</url>
         </repository>
     </repositories>
 
