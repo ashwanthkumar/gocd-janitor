@@ -49,7 +49,7 @@ public class DeleteAction implements Action {
     void deleteDirectory(File path) throws IOException {
         if (isNotWhiteListed(path)) {
             File[] files = path.listFiles();
-            if(files == null) throw new IOException("Couldn't list files inside " + path.getAbsolutePath());
+            if (files == null) throw new IOException("Couldn't list files inside " + path.getAbsolutePath());
             for (File file : files) {
                 if (isNotWhiteListed(file)) {
                     if (file.isDirectory()) {
