@@ -97,14 +97,6 @@ public class Janitor {
         LOG.info("Shutting down Janitor");
     }
 
-    private List<PipelineConfig> getPipelines() throws IOException {
-        LOG.info("Finding pipelines to process");
-        List<PipelineConfig> pipelines = concat(config.getPipelines(), pipelinesNotInConfiguration());
-        LOG.info(pipelines.size() + " pipelines found");
-
-        return pipelines;
-    }
-
     /* default */ List<PipelineConfig> pipelinesNotInConfiguration() throws IOException {
         return map(
                 filter(client.allPipelineNames(config.getPipelinePrefix()), new Predicate<String>() {
@@ -186,6 +178,14 @@ public class Janitor {
                 return new Tuple2<>(name, versions);
             }
         });
+    }
+
+    private List<PipelineConfig> getPipelines() throws IOException {
+        LOG.info("Finding pipelines to process");
+        List<PipelineConfig> pipelines = concat(config.getPipelines(), pipelinesNotInConfiguration());
+        LOG.info(pipelines.size() + " pipelines found");
+
+        return pipelines;
     }
 
     private Set<Map.Entry<Integer, PipelineRunStatus>> getPipelineStatuses(String pipelineName, int offset) {
