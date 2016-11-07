@@ -20,16 +20,15 @@ import org.slf4j.LoggerFactory;
 
 import java.io.File;
 import java.io.IOException;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
 
 import static in.ashwanthkumar.utils.collections.Lists.*;
 
 public class Janitor {
     private static final Logger LOG = LoggerFactory.getLogger(Janitor.class);
     private Action action;
+    private GoCD client;
+    private final JanitorConfiguration config;
 
     public static void main(String[] args) throws IOException {
         OptionParser parser = new OptionParser();
@@ -62,28 +61,30 @@ public class Janitor {
             System.exit(1);
         }
 
-        String configPath = (String) options.valueOf("config");
-        new Janitor(action).run(configPath, options.has("dry-run"));
+        JanitorConfiguration config = JanitorConfiguration.load((String) options.valueOf("config"));
+        GoCD client = new GoCD(config.getServer(), config.getUsername(), config.getPassword());
+
+        new Janitor(action, config, client).run(options.has("dry-run"));
     }
 
-    public Janitor(Action action) {
+    public Janitor(Action action, JanitorConfiguration config, GoCD client) {
         this.action = action;
+        this.config = config;
+        this.client = client;
     }
 
-    public void run(String pathToConfiguration, Boolean dryRun) throws IOException {
-        final JanitorConfiguration config = JanitorConfiguration.load(pathToConfiguration);
+    public void run(Boolean dryRun) throws IOException {
         LOG.info("Starting Janitor");
         LOG.info("Go Server - " + config.getServer());
         LOG.info("Artifact Dir - " + config.getArtifactStorage());
+
         if (dryRun) {
             LOG.info("Working in Dry run mode, we will not delete anything in this run.");
         }
 
-        final GoCD client = new GoCD(config.getServer(), config.getUsername(), config.getPassword());
-
-        List<PipelineConfig> pipelinesNotInConfig = pipelinesNotInConfiguration(client, config);
-        List<Tuple2<String, Set<Integer>>> requiredPipelineAndVersions = mandatoryPipelineVersions(client, concat(config.getPipelines(), pipelinesNotInConfig));
-        WhiteList whiteList = computeWhiteList(client, requiredPipelineAndVersions);
+        List<PipelineConfig> pipelines = getPipelines();
+        List<Tuple2<String, Set<Integer>>> pipelineVersionsToRetain = pipelineVersionsToRetain(pipelines);
+        WhiteList whiteList = computeWhiteList(pipelineVersionsToRetain);
 
         LOG.info("Number of white listed pipeline instances - " + whiteList.size());
         for (PipelineDependency pipelineDependency : whiteList.it()) {
@@ -92,11 +93,11 @@ public class Janitor {
 
         long bytesProcessed = performAction(whiteList, config.getArtifactStorage(), dryRun);
 
-        LOG.info("Total bytes (deleted / moved) processed so far - " + FileUtils.byteCountToDisplaySize(bytesProcessed));
+        LOG.info("Total bytes (deleted / moved) - " + FileUtils.byteCountToDisplaySize(bytesProcessed));
         LOG.info("Shutting down Janitor");
     }
 
-    /* default */ List<PipelineConfig> pipelinesNotInConfiguration(GoCD client, final JanitorConfiguration config) throws IOException {
+    /* default */ List<PipelineConfig> pipelinesNotInConfiguration() throws IOException {
         return map(
                 filter(client.allPipelineNames(config.getPipelinePrefix()), new Predicate<String>() {
                     @Override
@@ -114,6 +115,7 @@ public class Janitor {
 
     /* default */ long performAction(WhiteList whiteList, String artifactStorage, Boolean dryRun) {
         long deletedBytes = 0;
+
         for (String pipeline : whiteList.pipelinesUnderRadar()) {
             LOG.info("Looking for pipeline - " + pipeline);
             File pipelineDirectory = new File(artifactStorage + "/" + pipeline);
@@ -126,30 +128,31 @@ public class Janitor {
                 }
             }
         }
+
         return deletedBytes;
     }
 
-    /* default */ List<Tuple2<String, Set<Integer>>> mandatoryPipelineVersions(final GoCD client, List<PipelineConfig> pipelines) {
+    /* default */ List<Tuple2<String, Set<Integer>>> pipelineVersionsToRetain(List<PipelineConfig> pipelines) {
+        LOG.info("Calculating which pipeline versions to retain.");
+
         return map(pipelines, new Function<PipelineConfig, Tuple2<String, Set<Integer>>>() {
             @Override
             public Tuple2<String, Set<Integer>> apply(PipelineConfig pipelineConfig) {
                 Set<Integer> versions = new HashSet<>();
                 int offset = 0;
-                Set<Map.Entry<Integer, PipelineRunStatus>> pipelineStatuses = null;
-                try {
-                    pipelineStatuses = client.pipelineRunStatus(pipelineConfig.getName(), offset).entrySet();
-                } catch (IOException e) {
-                    throw new RuntimeException(e);
-                }
+                String name = pipelineConfig.getName();
+
+                Set<Map.Entry<Integer, PipelineRunStatus>> pipelineStatuses = getPipelineStatuses(name, offset);
+
                 if (!pipelineStatuses.isEmpty()) {
-                    versions.add(max(pipelineStatuses).getKey());     // Latest run version irrespective of its status will be added to whitelist
-                    versions.add(max(pipelineStatuses).getKey() + 1); // current run of the pipeline (if any) - History endpoint doesn't expose current running pipeline info
+                    Integer latestVersion = max(pipelineStatuses).getKey();
+                    versions.add(latestVersion);     // Latest run version irrespective of its status will be added to whitelist
+                    versions.add(latestVersion + 1); // current run of the pipeline (if any) - History endpoint doesn't expose current running pipeline info
                 }
 
                 while (versions.size() < pipelineConfig.getRunsToPersist() + 2 /* the max and max + 1 versions */) {
-                    if (pipelineStatuses.isEmpty()) {
+                    if (pipelineStatuses.isEmpty())
                         break;
-                    }
 
                     versions.addAll(
                             take(map(filter(pipelineStatuses, new Predicate<Map.Entry<Integer, PipelineRunStatus>>() {
@@ -165,19 +168,35 @@ public class Janitor {
                             }), pipelineConfig.getRunsToPersist())
                     );
 
-                    offset += 10; // default page size is 10
-                    try {
-                        pipelineStatuses = client.pipelineRunStatus(pipelineConfig.getName(), offset).entrySet();
-                    } catch (IOException e) {
-                        throw new RuntimeException(e);
-                    }
+                    offset += pipelineStatuses.size();
+
+                    pipelineStatuses = getPipelineStatuses(name, offset);
                 }
-                return new Tuple2<>(pipelineConfig.getName(), versions);
+
+                LOG.info("Versions of pipeline " + name + " to retain: " + Arrays.toString(versions.toArray()));
+
+                return new Tuple2<>(name, versions);
             }
         });
     }
 
-    /* default */ WhiteList computeWhiteList(final GoCD client, List<Tuple2<String, Set<Integer>>> requiredPipelineAndVersions) {
+    private List<PipelineConfig> getPipelines() throws IOException {
+        LOG.info("Finding pipelines to process");
+        List<PipelineConfig> pipelines = concat(config.getPipelines(), pipelinesNotInConfiguration());
+        LOG.info(pipelines.size() + " pipelines found");
+
+        return pipelines;
+    }
+
+    private Set<Map.Entry<Integer, PipelineRunStatus>> getPipelineStatuses(String pipelineName, int offset) {
+        try {
+            return client.pipelineRunStatus(pipelineName, offset).entrySet();
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+    /* default */ WhiteList computeWhiteList(List<Tuple2<String, Set<Integer>>> requiredPipelineAndVersions) {
         return new WhiteList(flatten(map(requiredPipelineAndVersions, new Function<Tuple2<String, Set<Integer>>, List<PipelineDependency>>() {
             @Override
             public List<PipelineDependency> apply(Tuple2<String, Set<Integer>> tuple) {
