@@ -16,7 +16,7 @@ import java.util.Set;
 public class DeleteAction implements Action {
     private static final Logger LOG = LoggerFactory.getLogger(DeleteAction.class);
 
-    Set<String> whiteList = new HashSet<>();
+    private Set<String> whiteList = new HashSet<>();
 
     public DeleteAction(Set<String> whiteList) {
         this.whiteList = whiteList;
@@ -31,22 +31,43 @@ public class DeleteAction implements Action {
         File versionDir = new File(pipelineDir.getAbsolutePath() + "/" + version);
         long size = FileUtils.sizeOfDirectory(versionDir);
 
-        if (dryRun) {
-            LOG.info("[DRY RUN] Will remove " + versionDir.getAbsolutePath() + ", size = " + FileUtils.byteCountToDisplaySize(size));
-        } else {
-            LOG.info("Deleting " + versionDir.getAbsolutePath() + ", size = " + FileUtils.byteCountToDisplaySize(size));
-            try {
-                deleteDirectory(versionDir);
-            } catch (IOException e) {
-                LOG.error(e.getMessage(), e);
-                throw new RuntimeException(e);
+        if (size > 0) {
+            if (dryRun) {
+                LOG.info("[DRY RUN] Will remove " + versionDir.getAbsolutePath() + ", size = " + FileUtils.byteCountToDisplaySize(size));
+            } else {
+                LOG.info("Deleting " + versionDir.getAbsolutePath() + ", size = " + FileUtils.byteCountToDisplaySize(size));
+                try {
+                    deleteDirectory(versionDir);
+                } catch (IOException e) {
+                    LOG.error(e.getMessage(), e);
+                    throw new RuntimeException(e);
+                }
             }
         }
 
         return size;
     }
 
-    void deleteDirectory(File path) throws IOException {
+    private long sizeOfDirectory(File directory) {
+        long size = 0;
+
+        File[] files = directory.listFiles();
+
+        if(files != null) {
+            for (File file : files) {
+                try {
+                    if (!FileUtils.isSymlink(file) && isNotWhiteListed(file)) {
+                        size += file.isDirectory() ? sizeOfDirectory(file) : file.length();
+                    }
+                }
+                catch (IOException ignored) {}
+            }
+        }
+
+        return size;
+    }
+
+    private void deleteDirectory(File path) throws IOException {
         if (isNotWhiteListed(path)) {
             File[] files = path.listFiles();
             if (files == null) throw new IOException("Couldn't list files inside " + path.getAbsolutePath());
