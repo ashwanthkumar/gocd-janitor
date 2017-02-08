@@ -29,11 +29,11 @@ public class DeleteAction implements Action {
     @Override
     public long invoke(File pipelineDir, String version, boolean dryRun) {
         File versionDir = new File(pipelineDir.getAbsolutePath() + "/" + version);
-        long size = sizeOfDirectory(versionDir);
+        DirectoryStats stats = getDirectoryStats(versionDir);
 
-        if (size > 0) {
+        if (stats.fileCount > 0) {
             String path = versionDir.getAbsolutePath();
-            String displaySize = FileUtils.byteCountToDisplaySize(size);
+            String displaySize = FileUtils.byteCountToDisplaySize(stats.size);
 
             if (dryRun) {
                 LOG.info("[DRY RUN] Will remove " + path + ", size = " + displaySize);
@@ -50,11 +50,11 @@ public class DeleteAction implements Action {
             }
         }
 
-        return size;
+        return stats.size;
     }
 
-    private long sizeOfDirectory(File directory) {
-        long size = 0;
+    private DirectoryStats getDirectoryStats(File directory) {
+        DirectoryStats stats = new DirectoryStats();
 
         File[] files = directory.listFiles();
 
@@ -62,14 +62,17 @@ public class DeleteAction implements Action {
             for (File file : files) {
                 try {
                     if (!FileUtils.isSymlink(file) && isNotWhiteListed(file)) {
-                        size += file.isDirectory() ? sizeOfDirectory(file) : file.length();
+                        if (file.isDirectory())
+                            stats.Add(getDirectoryStats(file));
+                        else
+                            stats.Add(file);
                     }
                 }
                 catch (IOException ignored) {}
             }
         }
 
-        return size;
+        return stats;
     }
 
     private void deleteDirectory(File path) throws IOException {
@@ -95,4 +98,18 @@ public class DeleteAction implements Action {
         return !this.whiteList.contains(path.getName());
     }
 
+    private class DirectoryStats {
+        private long size = 0;
+        private long fileCount = 0;
+
+        void Add(DirectoryStats directoryStats) {
+            size += directoryStats.size;
+            fileCount += directoryStats.fileCount;
+        }
+
+        void Add(File file) {
+            size += file.length();
+            fileCount += 1;
+        }
+    }
 }
