@@ -32,9 +32,15 @@ public class DeleteAction implements Action {
         long size = sizeOfDirectory(versionDir);
 
         if (size > 0) {
-            LOG.info((dryRun ? "[DRY RUN] Will remove " : "Deleting ") + versionDir.getAbsolutePath() + ", size = " + FileUtils.byteCountToDisplaySize(size));
+            String path = versionDir.getAbsolutePath();
+            String displaySize = FileUtils.byteCountToDisplaySize(size);
 
-            if (!dryRun) {
+            if (dryRun) {
+                LOG.info("[DRY RUN] Will remove " + path + ", size = " + displaySize);
+            }
+            else {
+                LOG.info("Deleting " + path + ", size = " + displaySize);
+
                 try {
                     deleteDirectory(versionDir);
                 } catch (IOException e) {
