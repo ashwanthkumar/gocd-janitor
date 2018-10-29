@@ -1,4 +1,4 @@
-package in.ashwanthkumar.gocd.artifacts;
+ package in.ashwanthkumar.gocd.artifacts;
 
 import in.ashwanthkumar.gocd.actions.Action;
 import in.ashwanthkumar.gocd.actions.DeleteAction;
@@ -6,6 +6,7 @@ import in.ashwanthkumar.gocd.actions.MoveAction;
 import in.ashwanthkumar.gocd.artifacts.config.JanitorConfiguration;
 import in.ashwanthkumar.gocd.artifacts.config.PipelineConfig;
 import in.ashwanthkumar.gocd.client.GoCD;
+import in.ashwanthkumar.gocd.client.http.HttpClient;
 import in.ashwanthkumar.gocd.client.types.PipelineDependency;
 import in.ashwanthkumar.gocd.client.types.PipelineRunStatus;
 import in.ashwanthkumar.utils.collections.Lists;
@@ -25,6 +26,9 @@ import java.util.*;
 import static in.ashwanthkumar.utils.collections.Lists.*;
 
 public class Janitor {
+    private static final int SOCKET_TIMEOUT_IN_MILLIS = 3 * 600 * 1000;
+    private static final int READ_TIMEOUT_IN_MILLIS = 3 * 600 * 1000;
+
     private static final Logger LOG = LoggerFactory.getLogger(Janitor.class);
     private Action action;
     private GoCD client;
@@ -62,7 +66,7 @@ public class Janitor {
         }
 
         JanitorConfiguration config = JanitorConfiguration.load((String) options.valueOf("config"));
-        GoCD client = new GoCD(config.getServer(), config.getUsername(), config.getPassword());
+        GoCD client = new GoCD(config.getServer(), new HttpClient(config.getUsername(), config.getPassword(), null, SOCKET_TIMEOUT_IN_MILLIS, READ_TIMEOUT_IN_MILLIS));
 
         new Janitor(action, config, client).run(options.has("dry-run"));
     }
