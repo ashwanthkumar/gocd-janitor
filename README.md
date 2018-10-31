@@ -1,4 +1,4 @@
-[![Build Status](https://snap-ci.com/ashwanthkumar/gocd-janitor/branch/master/build_image)](https://snap-ci.com/ashwanthkumar/gocd-janitor/branch/master)
+[![Build Status](https://travis-ci.org/ashwanthkumar/gocd-janitor.svg?branch=master)](https://travis-ci.org/ashwanthkumar/gocd-janitor)
 
 # gocd-janitor
 Tiny program that helps you with cleaning up artifacts on GoCD servers. There was a [discussion](https://groups.google.com/forum/#!topic/go-cd/HfOY_74OKhI/discussion) on GoCD mailing list and my own not-so-good experience managing artifacts on GoCD led me to this.
