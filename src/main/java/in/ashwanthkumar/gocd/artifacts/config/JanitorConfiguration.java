@@ -13,6 +13,10 @@ import java.util.Objects;
 import java.util.Set;
 
 public class JanitorConfiguration {
+
+    private static final String USERNAME = "username";
+    private static final String PASSWORD = "password";
+
     private String server;
     private String username;
     private String password;
@@ -35,10 +39,13 @@ public class JanitorConfiguration {
         final JanitorConfiguration janitorConfiguration = new JanitorConfiguration()
                 .setServer(config.getString("server"))
                 .setArtifactStorage(config.getString("artifacts-dir"))
-                .setUsername(config.getString("username"))
-                .setPassword(config.getString("password"))
                 .setDefaultPipelineVersions(config.getInt("pipeline-versions"))
                 .setPipelinePrefix(HoconUtils.getString(config, "pipeline-prefix", ""));
+
+        if (config.hasPath(USERNAME) && config.hasPath(PASSWORD)) {
+            janitorConfiguration.setUsername(config.getString(USERNAME))
+                                .setPassword(config.getString(PASSWORD));
+        }
 
         List<PipelineConfig> pipelines = Lists.map((List<Config>) config.getConfigList("pipelines"), new Function<Config, PipelineConfig>() {
             @Override
