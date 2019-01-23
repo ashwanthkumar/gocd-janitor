@@ -16,6 +16,8 @@ import java.util.Set;
 public class DeleteAction implements Action {
     private static final Logger LOG = LoggerFactory.getLogger(DeleteAction.class);
 
+    private static final String COULD_NOT_DELETE = "Could not delete '%s'.";
+
     private Set<String> whiteList = new HashSet<>();
 
     public DeleteAction(Set<String> whiteList) {
@@ -42,7 +44,7 @@ public class DeleteAction implements Action {
                 LOG.info("Deleting " + path + ", size = " + displaySize);
 
                 try {
-                    deleteDirectory(versionDir);
+                    deleteDirectory(versionDir, versionDir);
                 } catch (IOException e) {
                     LOG.error(e.getMessage(), e);
                     throw new RuntimeException(e);
@@ -75,23 +77,36 @@ public class DeleteAction implements Action {
         return stats;
     }
 
-    private void deleteDirectory(File path) throws IOException {
+    private void deleteDirectory(final File versionDir, final File path) throws IOException {
         if (isNotWhiteListed(path)) {
             File[] files = path.listFiles();
             if (files == null) throw new IOException("Couldn't list files inside " + path.getAbsolutePath());
             for (File file : files) {
                 if (isNotWhiteListed(file)) {
                     if (file.isDirectory()) {
-                        deleteDirectory(file);
+                        deleteDirectory(versionDir, file);
                     } else {
                         boolean deleted = file.delete();
                         if (!deleted) {
-                            throw new IOException("Could not delete " + file.getAbsolutePath());
+                            throw new IOException(String.format(COULD_NOT_DELETE, file.getAbsolutePath()));
                         }
+                        deleteEmptyDirectory(versionDir, file.getParentFile());
                     }
                 }
             }
         }
+    }
+
+    private void deleteEmptyDirectory(final File versionDir, final File dir) throws IOException {
+        if (versionDir.equals(dir) || dir.listFiles().length > 0) {
+            return;
+        }
+
+        if (!dir.delete()) {
+            throw new IOException(String.format(COULD_NOT_DELETE, dir.getAbsolutePath()));
+        }
+
+        deleteEmptyDirectory(versionDir, dir.getParentFile());
     }
 
     private boolean isNotWhiteListed(File path) {
