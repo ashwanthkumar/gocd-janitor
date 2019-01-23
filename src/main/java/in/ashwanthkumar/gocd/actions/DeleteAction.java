@@ -16,6 +16,8 @@ import java.util.Set;
 public class DeleteAction implements Action {
     private static final Logger LOG = LoggerFactory.getLogger(DeleteAction.class);
 
+    private static final String COULD_NOT_DELETE = "Could not delete '%s'.";
+
     private Set<String> whiteList = new HashSet<>();
 
     public DeleteAction(Set<String> whiteList) {
@@ -86,10 +88,19 @@ public class DeleteAction implements Action {
                     } else {
                         boolean deleted = file.delete();
                         if (!deleted) {
-                            throw new IOException("Could not delete " + file.getAbsolutePath());
+                            throw new IOException(String.format(COULD_NOT_DELETE, file.getAbsolutePath()));
                         }
                     }
                 }
+            }
+            deleteEmptyDirectory(path);
+        }
+    }
+
+    private void deleteEmptyDirectory(final File dir) throws IOException {
+        if (dir.isDirectory() && dir.listFiles().length == 0) {
+            if (!dir.delete()) {
+                throw new IOException(String.format(COULD_NOT_DELETE, dir.getAbsolutePath()));
             }
         }
     }
