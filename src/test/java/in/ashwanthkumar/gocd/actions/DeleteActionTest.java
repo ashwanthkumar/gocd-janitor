@@ -56,8 +56,38 @@ public class DeleteActionTest {
         assertThat(new File(whiteListed1).exists(), is(true));
         assertThat(new File(whiteListed2).exists(), is(true));
         assertThat(new File(whiteListed3).exists(), is(true));
-
     }
 
+    @Test
+    public void emptyDirectoriesShouldBeDeleted() throws IOException {
+        final Path pipelineDir = Files.createTempDirectory("pipelineDir");
+        final File expectedDeletedFile4 = new File(createFile(pipelineDir, "2", "stage-4", "a", "x.txt"));
+        assertThat(expectedDeletedFile4.exists(), is(true));
+        assertThat(new File(createFile(pipelineDir, "2", "stage-4", "a", "b", "x.txt")).exists(), is(true));
+        assertThat(new File(createFile(pipelineDir, "2", "stage-4", "a", "b", "c", "x.txt")).exists(), is(true));
+        assertThat(new File(createFile(pipelineDir, "2", "stage-4", "a", "b", "d", "x.txt")).exists(), is(true));
+        final File expectedDeletedFile5_a = new File(createFile(pipelineDir, "3", "stage-4", "a", "x.txt"));
+        assertThat(expectedDeletedFile5_a.exists(), is(true));
+        final File expectedDeletedFile5_a_b = new File(createFile(pipelineDir, "3", "stage-4", "a", "b", "x_whiteListed.txt"));
+        assertThat(expectedDeletedFile5_a_b.exists(), is(true));
+        final File expectedDeletedFile5_a_b_c = new File(createFile(pipelineDir, "3", "stage-4", "a", "b", "c", "x.txt"));
+        assertThat(expectedDeletedFile5_a_b_c.exists(), is(true));
+        final File expectedDeletedFile5_a_b_d = new File(createFile(pipelineDir, "3", "stage-4", "a", "b", "d", "x.txt"));
+        assertThat(expectedDeletedFile5_a_b_d.exists(), is(true));
+
+        new DeleteAction().invoke(pipelineDir.toFile(), "2", false);
+        new DeleteAction("x_whiteListed.txt").invoke(pipelineDir.toFile(), "3", false);
+
+        assertThat(expectedDeletedFile4.getParentFile().exists(), is(false));
+        assertThat(expectedDeletedFile4.getParentFile().getParentFile().exists(), is(false));
+        assertThat(expectedDeletedFile4.getParentFile().getParentFile().getParentFile().exists(), is(false));
+
+        assertThat(expectedDeletedFile5_a_b_c.getParentFile().exists(), is(false));
+        assertThat(expectedDeletedFile5_a_b_d.getParentFile().exists(), is(false));
+        assertThat(expectedDeletedFile5_a.exists(), is(false));
+        assertThat("Directory was not deleted because it contains whitelisted file.", expectedDeletedFile5_a.getParentFile().exists(), is(true));
+        assertThat("Whitelisted file cannot be deleted.", expectedDeletedFile5_a_b.exists(), is(true));
+        assertThat("Directory was not deleted because it contains whitelisted file.", expectedDeletedFile5_a_b.getParentFile().exists(), is(true));
+    }
 
 }
