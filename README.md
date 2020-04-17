@@ -41,6 +41,9 @@ gocd.janitor {
   # (Optional) Global prefix while selecting the pipelines (default - "")
   pipeline-prefix = "pipeline-prefix"
 
+  # (Optional) Specify the list of pipelines you want to ignore
+  pipelines-to-ignore = ["pipeline1", "pipeline2"]
+
   # Override the versions to keep for specific pipelines
   # To leave this key blank, specify it like: pipelines = []
   pipelines = [{
@@ -70,6 +73,8 @@ Janitor is sensitive about what it considers as failures. The conditions are as 
 
 1. Any 1 stage failure is considered a pipeline failure.
 2. If the pipeline doesn't run to completion (because of it being paused or locked) it is considered a failure.
+
+But Janitor will never remove the latest run, so you don't have to worry about a running instance of the pipeline.
 
 ### Does Janitor respect the "Never Cleanup Artifacts" option of the pipeline?
 No. That's inside the GoCD's configuration and we don't have a way to syncing it yet. If you want this feature, please raise it as an Issue or even better send a Pull Request :smile:

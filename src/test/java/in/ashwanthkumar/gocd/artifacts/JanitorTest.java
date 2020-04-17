@@ -101,6 +101,27 @@ public class JanitorTest {
         assertThat(whiteList.contains("pipeline1-Baz", "6"), is(true));
     }
 
+    @Test
+    public void shouldIgnorePipelinesMarkedAsIgnore() throws IOException {
+        config.setPipelines(Lists.of(
+                new PipelineConfig("pipeline1", 5),
+                new PipelineConfig("pipeline2", 5),
+                new PipelineConfig("pipeline3", 5))
+        )
+                .setDefaultPipelineVersions(10)
+                .setPipelinePrefix("")
+                .setPipelinesToIgnore(Sets.of("pipeline4"));
+
+        when(client.allPipelineNames("")).thenReturn(
+                Lists.of("pipeline1", "pipeline2", "pipeline3", "pipeline4", "pipeline5")
+        );
+
+        List<PipelineConfig> pipelines = janitor().pipelinesNotInConfiguration();
+
+        assertThat(pipelines.size(), is(1));
+        assertThat(pipelines.get(0), is(new PipelineConfig("pipeline5", 10)));
+    }
+
     private Map<Integer, PipelineRunStatus> pipelineVersions(Integer key1, PipelineRunStatus value1,
                                                              Integer key2, PipelineRunStatus value2,
                                                              Integer key3, PipelineRunStatus value3) {

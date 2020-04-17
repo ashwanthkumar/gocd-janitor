@@ -1,4 +1,4 @@
- package in.ashwanthkumar.gocd.artifacts;
+package in.ashwanthkumar.gocd.artifacts;
 
 import in.ashwanthkumar.gocd.actions.Action;
 import in.ashwanthkumar.gocd.actions.DeleteAction;
@@ -103,12 +103,20 @@ public class Janitor {
 
     /* default */ List<PipelineConfig> pipelinesNotInConfiguration() throws IOException {
         return map(
-                filter(client.allPipelineNames(config.getPipelinePrefix()), new Predicate<String>() {
-                    @Override
-                    public Boolean apply(String pipeline) {
-                        return !config.hasPipeline(pipeline);
-                    }
-                }),
+                // remove pipelines that are marked to be ignored
+                filter(
+                        // get the pipelines by the prefix
+                        filter(client.allPipelineNames(config.getPipelinePrefix()), new Predicate<String>() {
+                            @Override
+                            public Boolean apply(String pipeline) {
+                                return !config.hasPipeline(pipeline);
+                            }
+                        }), new Predicate<String>() {
+                            @Override
+                            public Boolean apply(String pipelineName) {
+                                return !config.getPipelinesToIgnore().contains(pipelineName);
+                            }
+                        }),
                 new Function<String, PipelineConfig>() {
                     @Override
                     public PipelineConfig apply(String pipelineName) {
@@ -225,8 +233,7 @@ public class Janitor {
         if (files == null) {
             LOG.debug("Moving On - There are no files under " + path);
             return new File[0];
-        }
-        else return files;
+        } else return files;
     }
 
     private <T> List<T> take(List<T> list, int k) {

@@ -25,6 +25,7 @@ public class JanitorConfiguration {
     private List<PipelineConfig> pipelines;
     private Set<String> pipelineNames;
     private String pipelinePrefix;
+    private Set<String> pipelinesToIgnore;
 
     public static JanitorConfiguration load(String file) {
         return load(ConfigFactory.parseFile(new File(file)));
@@ -40,7 +41,8 @@ public class JanitorConfiguration {
                 .setServer(config.getString("server"))
                 .setArtifactStorage(config.getString("artifacts-dir"))
                 .setDefaultPipelineVersions(config.getInt("pipeline-versions"))
-                .setPipelinePrefix(HoconUtils.getString(config, "pipeline-prefix", ""));
+                .setPipelinePrefix(HoconUtils.getString(config, "pipeline-prefix", ""))
+                .setPipelinesToIgnore(new HashSet<>(HoconUtils.getStringListOrEmpty(config, "pipelines-to-ignore")));
 
         if (config.hasPath(USERNAME) && config.hasPath(PASSWORD)) {
             janitorConfiguration.setUsername(config.getString(USERNAME))
@@ -149,5 +151,15 @@ public class JanitorConfiguration {
 
     public String getPipelinePrefix() {
         return pipelinePrefix;
+    }
+
+    public Set<String> getPipelinesToIgnore() {
+        if(pipelinesToIgnore != null) return pipelinesToIgnore;
+        else return new HashSet<>();
+    }
+
+    public JanitorConfiguration setPipelinesToIgnore(Set<String> pipelinesToIgnore) {
+        this.pipelinesToIgnore = pipelinesToIgnore;
+        return this;
     }
 }
